@@ -1,0 +1,2 @@
+from asq_solvers.data.dataset_readers.decompatt_reader import DecompAttReader
+from asq_solvers.data.dataset_readers.entailment_tuple_reader import EntailmentTupleReader
