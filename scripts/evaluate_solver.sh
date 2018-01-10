@@ -48,9 +48,9 @@ fi
 
 # Compute entailment predictions for each premise and hypothesis
 if [ ! -f ${entailment_predictions} ]; then
-	python asq_solvers/run.py predict_custom \
-	--output-file ${entailment_predictions} --silent \
-	${model_dir}/model.tar.gz ${input_file_as_entailment_with_struct}
+	python asq_solvers/run.py predict \
+		--output-file ${entailment_predictions} --silent \
+		${model_dir}/model.tar.gz ${input_file_as_entailment_with_struct}
 fi
 
 # Compute qa predictions by aggregating the entailment predictions for each question+answer

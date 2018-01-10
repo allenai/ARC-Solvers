@@ -45,7 +45,8 @@ JSONL format of files
 import json
 import os
 import sys
-from contextlib import ExitStack
+
+from allennlp.common.util import JsonDict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))))
 from asq_solvers.processing.es_search import EsSearch
@@ -54,17 +55,15 @@ es_search = EsSearch()
 
 
 def add_retrieved_text(qa_file, output_file):
-    with ExitStack() as stack:
+    with open(output_file, 'w') as output_handle, open(qa_file, 'r') as qa_handle:
         print("Writing to {} from {}".format(output_file, qa_file))
-        output_handle = stack.enter_context(open(output_file, 'w'))
-        qa_handle = stack.enter_context(open(qa_file, 'r'))
         for line in qa_handle:
             json_line = json.loads(line)
             for output_dict in add_hits_to_qajson(json_line):
                 output_handle.write(json.dumps(output_dict) + "\n")
 
 
-def add_hits_to_qajson(qa_json):
+def add_hits_to_qajson(qa_json: JsonDict):
     question_text = qa_json["question"]["stem"]
     choices = [choice["text"] for choice in qa_json["question"]["choices"]]
     hits_per_choice = es_search.get_hits_for_question(question_text, choices)
@@ -78,7 +77,8 @@ def add_hits_to_qajson(qa_json):
     return output_dicts_per_question
 
 
-def create_output_dict(qa_json, choice_json, hit_sentence):
+# Create the output json dictionary from the QA file json, answer choice json and retrieved HIT
+def create_output_dict(qa_json: JsonDict, choice_json: JsonDict, hit_sentence: str):
     output_dict = {
         "id": qa_json["id"],
         "question": {

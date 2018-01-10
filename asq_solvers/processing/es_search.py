@@ -88,10 +88,11 @@ class EsSearch:
     def is_clean_sentence(self, s):
         # must only contain expected characters, should be single-sentence and only uses hyphens
         # for hyphenated words
-        return re.match("^[a-zA-Z0-9][a-zA-Z0-9;:,\(\)%\-\&\.'\"\s]+\.?$", s) is not None and \
-               re.match(".*\D\. \D.*", s) is None and \
-               re.match(".*\s\-\s.*", s) is None
+        return (re.match("^[a-zA-Z0-9][a-zA-Z0-9;:,\(\)%\-\&\.'\"\s]+\.?$", s) and
+                not re.match(".*\D\. \D.*", s) and
+                not re.match(".*\s\-\s.*", s))
 
     # Create a de-duplication key for a HIT
     def get_key(self, hit):
+        # Ignore characters that do not effect semantics of a sentence and URLs
         return re.sub('[^0-9a-zA-Z\.\-^;&%]+', '', re.sub('http[^ ]+', '', hit)).strip().rstrip(".")

@@ -8,7 +8,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s
                     level=logging.INFO)
 
 from asq_solvers.commands import main  # pylint: disable=wrong-import-position
-# Custom skidls modules for registering models, etc
+
 import asq_solvers.service.predictors
 if __name__ == "__main__":
     main(prog="python -m skidls.run")
