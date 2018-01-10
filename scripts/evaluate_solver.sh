@@ -2,42 +2,62 @@
 
 set -e
 
-# TODO Replace with input argument
-input_file=data/ASQ-Additional/ASQ-AdditionalRnd100-Test.jsonl
-input_file_with_hits=${input_file%.jsonl}_with_hits.jsonl
-input_file_as_entailment=${input_file%.jsonl}_as_entailment.jsonl
-entailment_predictions=${input_file%.jsonl}_predictions.jsonl
-qa_predictions=${input_file%.jsonl}_qapredictions.jsonl
+input_file=$1
+model_dir=$2
+
+if [ ! -n "model_dir" ] ; then
+  echo "USAGE: ./scripts/evaluate_solver.sh question_file.jsonl model_dir/"
+  exit 1
+fi
+input_file_prefix=${input_file%.jsonl}
+model_name=$(basename ${model_dir})
+
+# File containing retrieved HITS per choice (using the key "support")
+input_file_with_hits=${input_file_prefix}_with_hits.jsonl
+# File containing the entailment examples per choice (using the keys "premise" and "hypothesis")
+input_file_as_entailment=${input_file_prefix}_as_entailment.jsonl
+# File containing Open IE structure for the hypothesis (using the key "hypothesisStructure")
+input_file_as_entailment_with_struct=${input_file_prefix}_as_entailment_with_struct.jsonl
+# File containing the entailment predictions per HIT and answer choice (using the key "score")
+entailment_predictions=${input_file_prefix}_predictions_${model_name}.jsonl
+# File containing the QA predictions per question (using the key "selected_answers")
+qa_predictions=${input_file_prefix}_qapredictions_${model_name}.jsonl
 
 # Collect HITS from ElasticSearch for each question + answer choice
-if [ ! -f $input_file_with_hits ]; then
+if [ ! -f ${input_file_with_hits} ]; then
 	python asq_solvers/processing/add_retrieved_text.py \
-		$input_file \
-		$input_file_with_hits
+		${input_file} \
+		${input_file_with_hits}
 fi
 
 # Convert the dataset into an entailment dataset i.e. add "premise" and "hypothesis" fields to
 # the JSONL file where premise is the retrieved HIT for each answer choice and hypothesis is the
 # question + answer choice converted into a statement.
-if [ ! -f $input_file_as_entailment ]; then
+if [ ! -f ${input_file_as_entailment} ]; then
 	python asq_solvers/processing/convert_to_entailment.py \
-		$input_file_with_hits \
-		$input_file_as_entailment
+		${input_file_with_hits} \
+		${input_file_as_entailment}
+fi
+
+# Add structure to the entailment data
+if [ ! -f ${input_file_as_entailment_with_struct} ]; then
+	java -jar data/question-tuplizer.jar \
+		${input_file_as_entailment} \
+		${input_file_as_entailment_with_struct}
 fi
 
 # Compute entailment predictions for each premise and hypothesis
-if [ ! -f $entailment_predictions ]; then
+if [ ! -f ${entailment_predictions} ]; then
 	python asq_solvers/run.py predict_custom \
-	--overrides "dataset_reader.type=decompatt" \
-	--output-file $entailment_predictions --silent \
-	data/models/decompatt/model.tar.gz $input_file_as_entailment
+	--output-file ${entailment_predictions} --silent \
+	${model_dir}/model.tar.gz ${input_file_as_entailment_with_struct}
 fi
 
 # Compute qa predictions by aggregating the entailment predictions for each question+answer
 # choice (using max)
-if [ ! -f $qa_predictions ]; then
+if [ ! -f ${qa_predictions} ]; then
 	python asq_solvers/processing/evaluate_predictions.py \
-		$entailment_predictions \
-		$input_file \
-		$qa_predictions
+		${entailment_predictions} \
+		${input_file} \
+		${qa_predictions}
 fi
