@@ -33,11 +33,8 @@ Minimal expected format of files.
 import json
 import os
 import sys
-from contextlib import ExitStack
+from operator import itemgetter
 from typing import List, Dict
-
-import numpy
-from cytoolz.itertoolz import itemgetter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))))
 
@@ -108,7 +105,8 @@ def score_predictions(qid_choice_scores: Dict[str, Dict[str, List[float]]],
 
 # Returns the score for an answer choice given the scores per supporting sentence
 def score_choice(choice_predictions: List[float]) -> float:
-    return round(numpy.max(choice_predictions), 4)
+    # Round to four decimal points
+    return round(max(choice_predictions), 4)
 
 
 if __name__ == "__main__":
