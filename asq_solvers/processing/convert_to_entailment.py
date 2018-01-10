@@ -1,3 +1,40 @@
+"""
+Script to convert the retrieved HITS into an entailment dataset
+USAGE:
+ python scripts/convert_to_entailment.py hits_file output_file
+
+JSONL format of files
+ 1. hits_file:
+ {
+   "id": "Mercury_SC_415702",
+   "question": {
+      "stem": "George wants to warm his hands quickly by rubbing them. Which skin surface will
+               produce the most heat?"
+      "choice": {"text": "dry palms", "label": "A"},
+      "support": "Use hand sanitizers according to directions, which usually involves rubbing for
+                  at least ten seconds, then allowing hands to air dry."
+    },
+     "answerKey":"A"
+  }
+
+ 2. output_file:
+   {
+   "id": "Mercury_SC_415702",
+   "question": {
+      "stem": "George wants to warm his hands quickly by rubbing them. Which skin surface will
+               produce the most heat?"
+      "choice": {"text": "dry palms", "label": "A"},
+      "support": "Use hand sanitizers according to directions, which usually involves rubbing for
+                  at least ten seconds, then allowing hands to air dry."
+    },
+     "answerKey":"A",
+     "premise": "Use hand sanitizers according to directions, which usually involves rubbing for
+                  at least ten seconds, then allowing hands to air dry.",
+     "hypothesis": "George wants to warm his hands quickly by rubbing them. Dry palms skin
+                    surface will produce the most heat."
+  }
+"""
+
 import json
 import re
 import sys
@@ -63,7 +100,8 @@ def replace_wh_word_with_blank(question_str: str):
         replaceWord = match_arr[0][0]
         replaceIdx = match_arr[0][1]
         question_str = re.sub("\?$", ".", question_str.strip())
-        fitb_question = question_str[:replaceIdx] + "___" + question_str[replaceIdx + len(replaceWord):]
+        fitb_question = question_str[:replaceIdx] + "___" + question_str[
+                                                            replaceIdx + len(replaceWord):]
         return fitb_question.replace("___ of the following", "___")
     elif re.match(".*[^\.\?] *$", question_str):
         return question_str + " ___"
@@ -82,4 +120,3 @@ if __name__ == "__main__":
         raise ValueError("Provide at least two arguments: "
                          "json file with hits, output file name")
     convert_to_entailment(sys.argv[1], sys.argv[2])
-

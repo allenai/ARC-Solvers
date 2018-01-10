@@ -1,7 +1,52 @@
+"""
+Script to retrieve HITS for each answer choice and question
+USAGE:
+ python scripts/add_retrieved_text.py qa_file output_file
+
+JSONL format of files
+ 1. qa_file:
+ {
+    "id":"Mercury_SC_415702",
+    "question": {
+       "stem":"George wants to warm his hands quickly by rubbing them. Which skin surface will
+               produce the most heat?",
+       "choices":[
+                  {"text":"dry palms","label":"A"},
+                  {"text":"wet palms","label":"B"},
+                  {"text":"palms covered with oil","label":"C"},
+                  {"text":"palms covered with lotion","label":"D"}
+                 ]
+    },
+    "answerKey":"A"
+  }
+
+ 2. output_file:
+  {
+   "id": "Mercury_SC_415702",
+   "question": {
+      "stem": "..."
+      "choice": {"text": "dry palms", "label": "A"},
+      "support": "..."
+    },
+     "answerKey":"A"
+  }
+  ...
+  {
+   "id": "Mercury_SC_415702",
+   "question": {
+      "stem": "..."
+      "choice": {"text":"palms covered with lotion","label":"D"}
+      "support": "..."
+    },
+     "answerKey":"A"
+  }
+"""
+
 import json
 import os
 import sys
 from contextlib import ExitStack
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))))
 from asq_solvers.processing.es_search import EsSearch
 
@@ -51,4 +96,3 @@ if __name__ == "__main__":
         raise ValueError("Provide at least two arguments: "
                          "question-answer json file, output file name")
     add_retrieved_text(sys.argv[1], sys.argv[2])
-

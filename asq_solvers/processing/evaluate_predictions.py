@@ -1,7 +1,40 @@
+"""
+Script to compute the QA score from the entailment predictions for each supporting sentence and
+answer choice.
+USAGE:
+ python scripts/evaluate_predictions.py predictions_file qa_file output_file
+
+Minimal expected format of files.
+ 1. predictions_file:
+  {"id": "Mercury_SC_415702",
+   "question": {
+      "choice": {"text": "dry palms", "label": "A"},
+    }
+   "score": 0.31790056824684143
+  }
+
+ 2. qa_file:
+   {
+    "id":"Mercury_SC_415702",
+    "question": {
+       "stem":"George wants to warm his hands quickly by rubbing them. Which skin surface will
+               produce the most heat?",
+       "choices":[
+                  {"text":"dry palms","label":"A"},
+                  {"text":"wet palms","label":"B"},
+                  {"text":"palms covered with oil","label":"C"},
+                  {"text":"palms covered with lotion","label":"D"}
+                 ]
+    },
+    "answerKey":"A"
+  }
+"""
+
 import json
 import os
 import sys
 from contextlib import ExitStack
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))))
 
 
@@ -61,14 +94,14 @@ def score_predictions(id_choice_score_dict, qa_file, output_file):
             answer_key = json_line["answerKey"]
             question_score = 0
             if answer_key in selected_answers:
-                question_score = 1/len(selected_answers)
+                question_score = 1 / len(selected_answers)
             total_score += question_score
             json_line["selected_answers"] = ",".join(selected_answers)
             json_line["question_score"] = question_score
             num_questions += 1
             output_handle.write(json.dumps(json_line) + "\n")
         print("Metrics:\n\tScore={}\n\tQuestions:{}\n\tExam Score:{:.3f}".format(
-            total_score, num_questions, (total_score/num_questions)))
+            total_score, num_questions, (total_score / num_questions)))
 
 
 def create_output_dict(input_json, choice_json, hit_sentence):
@@ -89,4 +122,3 @@ if __name__ == "__main__":
         raise ValueError("Provide at least three arguments: "
                          "predictions_file, original qa file, output file")
     evaluate_predictions(sys.argv[1], sys.argv[2], sys.argv[3])
-
