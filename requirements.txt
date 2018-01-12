@@ -1,0 +1,9 @@
+# For searching text corpora
+elasticsearch
+
+# AllenNLP
+
+# Spacy2.0 is not compatible with this AllenNLP commit. So install spacy 1.9.0 before
+# installing AllenNLP
+spacy==1.9.0
+git+https://github.com/allenai/allennlp.git@5fd28f0f63d8ca96fc0931bebac8224fa071c35f#egg=allennlp

@@ -1,0 +1,9 @@
+# Python specific
+*.pyc
+*__pycache__
+
+# Ignore data files
+/data/
+
+# Intellij specific
+/.idea/
