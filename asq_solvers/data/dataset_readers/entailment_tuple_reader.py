@@ -1,3 +1,10 @@
+"""
+=====================================================================
+Decomposable Graph Entailment Model code replicated from SciTail repo
+https://github.com/allenai/scitail
+=====================================================================
+"""
+
 import logging
 from builtins import ValueError
 from typing import Dict, List, Set, Tuple
@@ -252,6 +259,7 @@ class EntailmentTupleReader(DatasetReader):
                         "before", "between", "after", "since", "without", "under", "within",
                         "along", "following", "across", "behind", "beyond", "plus", "except",
                         "but", "up", "out", "around", "down", "off", "above", "near"]
+
     @classmethod
     def from_params(cls, params: Params) -> 'EntailmentTupleReader':
         tokenizer = Tokenizer.from_params(params.pop('tokenizer', {}))

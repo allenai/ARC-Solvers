@@ -1,3 +1,10 @@
+"""
+=====================================================================
+Decomposable Graph Entailment Model code replicated from SciTail repo
+https://github.com/allenai/scitail
+=====================================================================
+"""
+
 import torch
 
 
@@ -15,6 +22,7 @@ class SingleTimeDistributed(torch.nn.Module):
     dimension of the tensor in the ``distribute_input`` position, i.e. ``(batch_size * time_steps,
     [rest])``.
     """
+
     def __init__(self, distributed_module, distribute_input):
         super(SingleTimeDistributed, self).__init__()
         self._module = distributed_module

@@ -1,4 +1,8 @@
 """
+=====================================================================
+Decomposable Graph Entailment Model code replicated from SciTail repo
+https://github.com/allenai/scitail
+=====================================================================
 Assorted utilities
 """
 import torch

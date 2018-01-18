@@ -1,3 +1,10 @@
+"""
+=====================================================================
+Decomposable Graph Entailment Model code replicated from SciTail repo
+https://github.com/allenai/scitail
+=====================================================================
+"""
+
 from typing import Dict, List, Any, Tuple
 
 import numpy
@@ -42,6 +49,7 @@ class TreeAttention(Model):
         After embedding the premise, we apply an encoder to get the context-based representation
 
     """
+
     def __init__(self, vocab: Vocabulary,
                  text_field_embedder: TextFieldEmbedder,
                  phrase_probability: FeedForward,
@@ -174,7 +182,6 @@ class TreeAttention(Model):
         mean_node_premise_attention = masked_mean(normalized_node_premise_attention, 2,
                                                   expanded_nodes_mask_premise)
 
-
         # convert batch x nodes and batch x premise to batch x nodes x premise mask
         nodes_only_mask = (torch.sum(nodes_mask, -1) > 0).float()
         node_premise_mask = nodes_only_mask.unsqueeze(-1).expand_as(mean_node_premise_attention) \
@@ -222,7 +229,8 @@ class TreeAttention(Model):
             aggregate_node_premise_lstm_representation,
             replace_masked_values(edge_targets.float(), edge_mask, 0))
         # edge label embeddings. dim: batch x edges x edge dim
-        masked_edge_labels = replace_masked_values(edge_labels.float(), edge_mask, 0).squeeze(2).long()
+        masked_edge_labels = replace_masked_values(edge_labels.float(), edge_mask, 0).squeeze(
+            2).long()
         edge_label_embeddings = self._edge_embedding(masked_edge_labels)
         # dim: batch x edges x (2* emb dim + edge dim)
 
