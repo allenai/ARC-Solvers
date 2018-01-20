@@ -30,7 +30,7 @@ class EsSearch:
         :param max_hit_length: Max number of characters for accepted HITS
         :param max_hits_per_choice: Max number of HITS returned per answer choice
         """
-        self._es_client = es_client
+        self._es = Elasticsearch([es_client], retries=3)
         self._indices = indices
         self._max_question_length = max_question_length
         self._max_hits_retrieved = max_hits_retrieved
@@ -69,8 +69,7 @@ class EsSearch:
 
     # Retrieve unfiltered HITS for input question and answer choice
     def get_hits_for_choice(self, question, choice):
-        es = Elasticsearch([self._es_client], retries=3)
-        res = es.search(index=self._indices, body=self.construct_qa_query(question, choice))
+        res = self._es.search(index=self._indices, body=self.construct_qa_query(question, choice))
         hits = []
         for idx, es_hit in enumerate(res['hits']['hits']):
             es_hit = EsHit(score=es_hit["_score"],
