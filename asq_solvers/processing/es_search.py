@@ -4,6 +4,14 @@ from elasticsearch import Elasticsearch
 import re
 
 
+class EsHit:
+    def __init__(self, score: float, position: int, text: str, type: str):
+        self.score = score
+        self.position = position
+        self.text = text
+        self.type = type
+
+
 class EsSearch:
     def __init__(self,
                  es_client: str = "localhost",
@@ -31,7 +39,7 @@ class EsSearch:
         # Regex for negation words used to ignore Lucene results with negation
         self._negation_regexes = [re.compile(r) for r in ["not\\s", "n't\\s", "except\\s"]]
 
-    def get_hits_for_question(self, question: str, choices: List[str]) -> Dict[str, List[str]]:
+    def get_hits_for_question(self, question: str, choices: List[str]) -> Dict[str, List[EsHit]]:
         """
         :param question: Question text
         :param choices: List of answer choices
@@ -43,6 +51,8 @@ class EsSearch:
         return choice_hits
 
     # Constructs an ElasticSearch query from the input question and choice
+    # Uses the last self._max_question_length characters from the question and requires that the
+    # text matches the answer choice and the hit type is a "sentence"
     def construct_qa_query(self, question, choice):
         return {"from": 0, "size": self._max_hits_retrieved,
                 "query": {
@@ -51,7 +61,8 @@ class EsSearch:
                             {"match": {"text": question[-self._max_question_length:]}}
                         ],
                         "filter": [
-                            {"match": {"text": choice}}
+                            {"match": {"text": choice}},
+                            {"type": {"value": "sentence"}}
                         ]
                     }
                 }}
@@ -60,15 +71,21 @@ class EsSearch:
     def get_hits_for_choice(self, question, choice):
         es = Elasticsearch([self._es_client], retries=3)
         res = es.search(index=self._indices, body=self.construct_qa_query(question, choice))
-        # print("Got {} Hits for choice: {}".format(res['hits']['total'], choice))
-        hits = [es_hit["_source"]["text"] for es_hit in res['hits']['hits']]
+        hits = []
+        for idx, es_hit in enumerate(res['hits']['hits']):
+            es_hit = EsHit(score=es_hit["_score"],
+                           position=idx,
+                           text=es_hit["_source"]["text"],
+                           type=es_hit["_type"])
+            hits.append(es_hit)
         return hits
 
     # Remove HITS that contain negation, are too long, are duplicates, are noisy.
-    def filter_hits(self, hits: List[str]) -> List[str]:
+    def filter_hits(self, hits: List[EsHit]) -> List[EsHit]:
         filtered_hits = []
         selected_hit_keys = set()
-        for hit_sentence in hits:
+        for hit in hits:
+            hit_sentence = hit.text
             hit_sentence = hit_sentence.strip().replace("\n", " ")
             if len(hit_sentence) > self._max_hit_length:
                 continue
@@ -80,7 +97,7 @@ class EsSearch:
                 continue
             if not self.is_clean_sentence(hit_sentence):
                 continue
-            filtered_hits.append(hit_sentence)
+            filtered_hits.append(hit)
             selected_hit_keys.add(self.get_key(hit_sentence))
         return filtered_hits[:self._max_hits_per_choice]
 
