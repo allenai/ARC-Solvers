@@ -29,14 +29,15 @@ Minimal expected format of files.
     "answerKey":"A"
   }
 """
-
-import json
 import os
 import sys
+import json
+sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))))
+
 from operator import itemgetter
 from typing import List, Dict
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))))
+from allennlp.common.util import JsonDict
 
 
 def evaluate_predictions(predictions_file, qa_file, output_file):
@@ -46,29 +47,45 @@ def evaluate_predictions(predictions_file, qa_file, output_file):
     score_predictions(qid_choice_scores, qa_file, output_file)
 
 
-def get_scores_per_qid_and_choice(predictions_file):
+def get_scores_per_qid_and_choice(predictions_file) -> Dict[str, Dict[str, List[JsonDict]]]:
+    """
+    Reads the file with entailment predictions to produce predictions per answer choice per qid.
+    :return: dictionary from qid -> (dictionary from choice text -> list of entailment predictions)
+    """
     with open(predictions_file, 'r') as predictions_handle:
-        qid_choice_scores = dict()
+        qid_choice_predictions = dict()
         for line in predictions_handle:
             json_line = json.loads(line)
             qid = json_line["id"]
             if "score" not in json_line:
                 raise Exception("Missing score in line:" + line)
             choice_score = json_line["score"]
+            choice_support = json_line["question"]["support"]
             choice_text = json_line["question"]["choice"]["text"]
-            if qid in qid_choice_scores:
-                choice_scores = qid_choice_scores[qid]
+            choice_prediction = {
+                "score": choice_score,
+                "support": choice_support,
+            }
+            if qid in qid_choice_predictions:
+                choice_scores = qid_choice_predictions[qid]
                 if choice_text not in choice_scores:
                     choice_scores[choice_text] = []
-                choice_scores[choice_text].append(choice_score)
+                choice_scores[choice_text].append(choice_prediction)
             else:
-                qid_choice_scores[qid] = dict()
-                qid_choice_scores[qid][choice_text] = [choice_score]
-        return qid_choice_scores
+                qid_choice_predictions[qid] = dict()
+                qid_choice_predictions[qid][choice_text] = [choice_prediction]
+        return qid_choice_predictions
 
 
-def score_predictions(qid_choice_scores: Dict[str, Dict[str, List[float]]],
+def score_predictions(qid_choice_predictions: Dict[str, Dict[str, List[JsonDict]]],
                       qa_file: str, output_file: str) -> None:
+    """
+    Uses the entailment predictions per answer choice per qid to compute the QA score
+    :param qid_choice_predictions: qid -> (choice text -> predictions)
+    :param qa_file: Original QA JSONL file
+    :param output_file: Output file with selected choices ("selected_answers" key) and score (
+    "question_score" key) per multiple-choice question.
+    """
     with open(qa_file, 'r') as qa_handle, open(output_file, 'w') as output_handle:
         total_score = 0
         num_questions = 0
@@ -79,10 +96,10 @@ def score_predictions(qid_choice_scores: Dict[str, Dict[str, List[float]]],
             for choice in answer_choices:
                 choice_text = choice["text"]
                 # if we have any entailment prediction for this answer choice, pick the
-                if id in qid_choice_scores and choice_text in qid_choice_scores[id]:
-                    choice["score"] = score_choice(qid_choice_scores[id][choice_text])
+                if id in qid_choice_predictions and choice_text in qid_choice_predictions[id]:
+                    update_choice_with_scores(qid_choice_predictions[id][choice_text], choice)
                 else:
-                    choice["score"] = 0
+                    update_choice_with_scores([], choice)
             # Get the maximum answer choice score
             max_choice_score = max(answer_choices, key=itemgetter("score"))["score"]
             # Collect all answer choices with the same score
@@ -99,12 +116,33 @@ def score_predictions(qid_choice_scores: Dict[str, Dict[str, List[float]]],
             json_line["question_score"] = question_score
             num_questions += 1
             output_handle.write(json.dumps(json_line) + "\n")
-        print("Metrics:\n\tScore={}\n\tQuestions:{}\n\tExam Score:{:.3f}".format(
+        print("Metrics:\n\tScore={}\n\tQuestions:{}\n\tExam Score:{:.5f}".format(
             total_score, num_questions, (total_score / num_questions)))
 
 
+def update_choice_with_scores(choice_predictions: List[JsonDict],
+                              input_choice: JsonDict) -> None:
+    """
+    Uses the entailment predictions to compute the solvers score for the answer choice. This
+    function will update input answer choice json with two new keys "score" and "support"
+    corresponding to the solver score and best supporting sentence for this choice respectively.
+    :param choice_predictions: list of predictions for this choice
+    :param input_choice: input json for this answer choice that will be updated in-place
+    """
+    if len(choice_predictions):
+        sorted_predictions = sorted(choice_predictions,
+                                    key=itemgetter("score"), reverse=True)
+        score = score_choice_predictions([pred["score"] for pred in sorted_predictions])
+        support = sorted_predictions[0]["support"]
+        input_choice["score"] = score
+        input_choice["support"] = support
+    else:
+        input_choice["score"] = 0
+        input_choice["support"] = ""
+
+
 # Returns the score for an answer choice given the scores per supporting sentence
-def score_choice(choice_predictions: List[float]) -> float:
+def score_choice_predictions(choice_predictions: List[float]) -> float:
     # Round to four decimal points
     return round(max(choice_predictions), 4)
 

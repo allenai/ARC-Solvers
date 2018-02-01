@@ -58,7 +58,9 @@ class EsSearch:
                 "query": {
                     "bool": {
                         "must": [
-                            {"match": {"text": question[-self._max_question_length:]}}
+                            {"match": {
+                                "text": question[-self._max_question_length:] + " " + choice
+                            }}
                         ],
                         "filter": [
                             {"match": {"text": choice}},

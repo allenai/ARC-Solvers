@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 @Predictor.register("dgem")
 class DgemPredictor(Predictor):
     """
-    Converts the QA JSON into an instance that is expected by the Decomposable Attention Model.
+    Converts the QA JSON into an instance that is expected by DGEM model.
     """
     def __init__(self, model: Model, dataset_reader: DatasetReader) -> None:
         super().__init__(model, dataset_reader)
