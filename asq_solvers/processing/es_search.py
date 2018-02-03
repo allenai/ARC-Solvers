@@ -6,6 +6,14 @@ import re
 
 class EsHit:
     def __init__(self, score: float, position: int, text: str, type: str):
+        """
+        Basic information about an ElasticSearch Hit
+        :param score: score returned by the query
+        :param position: position in the retrieved results (before any filters are applied)
+        :param text: retrieved sentence
+        :param type: type of the hit in the index (by default, only documents of type "sentence"
+        will be retrieved from the index)
+        """
         self.score = score
         self.position = position
         self.text = text
