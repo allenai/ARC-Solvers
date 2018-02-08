@@ -59,7 +59,7 @@ def convert_to_entailment(qa_file: str, output_file: str):
 def convert_qajson_to_entailment(qa_json: JsonDict):
     question_text = qa_json["question"]["stem"]
     choice = qa_json["question"]["choice"]["text"]
-    support = qa_json["question"]["support"]
+    support = qa_json["question"]["support"]["text"]
     hypothesis = create_hypothesis(get_fitb_from_question(question_text), choice)
     output_dict = create_output_dict(qa_json, support, hypothesis)
     return output_dict
