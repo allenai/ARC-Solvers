@@ -62,8 +62,8 @@ from tqdm._tqdm import tqdm
 sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))))
 from asq_solvers.processing.es_search import EsSearch, EsHit
 
-max_hits = 8
-es_search = EsSearch(max_hits_per_choice=max_hits, max_hits_retrieved=100)
+MAX_HITS = 8
+es_search = EsSearch(max_hits_per_choice=MAX_HITS, max_hits_retrieved=100)
 
 
 def add_retrieved_text(qa_file, output_file):
@@ -84,7 +84,7 @@ def add_hits_to_qajson(qa_json: JsonDict):
     choices = [choice["text"] for choice in qa_json["question"]["choices"]]
     hits_per_choice = es_search.get_hits_for_question(question_text, choices)
     output_dicts_per_question = []
-    filter_hits_across_choices(hits_per_choice, max_hits)
+    filter_hits_across_choices(hits_per_choice, MAX_HITS)
     for choice in qa_json["question"]["choices"]:
         choice_text = choice["text"]
         hits = hits_per_choice[choice_text]
