@@ -1,6 +1,6 @@
 """
-Script to convert the retrieved HITS into a paragraph comprehension dataset. Questions with no
-HITS are mapped to a blank paragraph.
+Script to convert the retrieved hits into a paragraph comprehension dataset. Questions with no
+hits are mapped to a blank paragraph.
 USAGE:
  python scripts/convert_to_para_comprehension.py hits_file qa_file output_file
 
