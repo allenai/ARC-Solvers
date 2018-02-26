@@ -83,18 +83,19 @@ sh scripts/evaluate_solver.sh \
   Run the evaluation scripts on this new file using the same commands as above.
   
   
- ## Running a new entailment-based model
+ ## Running a new Entailment-based model
   To run a new entailment model (implemented using AllenNLP), you need to 
    1. Create a `Predictor` that converts the input JSON to an `Instance` expected by your 
    entailment model. See [DecompAttPredictor](arc_solvers/service/predictors/decompatt_qa_predictor.py)
    for an example.
      
-   2. Add your custom predictor to the [predictor overrides](arc_solvers/commands/__init__.py#L7)
+   2. Add your custom predictor to the [predictor overrides](arc_solvers/commands/__init__.py#L8)
    For example, if your new model is registered using `my_awesome_model` and the predictor is 
    registered using `my_awesome_predictor`, add `"my_awesome_model": "my_awesome_predictor"` to 
    the `predictor_overrides`.
    
-   3. Run the `evaluate_solver.sh` script with your learned model in `my_awesome_model/model.tar.gz`
+   3. Run the `evaluate_solver.sh` script with your learned model in `my_awesome_model/model.tar.gz`:
+
     ```
      sh scripts/evaluate_solver.sh \
         data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
@@ -107,12 +108,13 @@ sh scripts/evaluate_solver.sh \
    RC model. See [BidafQaPredictor](arc_solvers/service/predictors/bidaf_qa_predictor.py)
    for an example.
 
-   2. Add your custom predictor to the [predictor overrides](arc_solvers/commands/__init__.py#L7)
+   2. Add your custom predictor to the [predictor overrides](arc_solvers/commands/__init__.py#L8)
    For example, if your new model is registered using `my_awesome_model` and the predictor is
    registered using `my_awesome_predictor`, add `"my_awesome_model": "my_awesome_predictor"` to
    the `predictor_overrides`.
 
-   3. Run the `evaluate_bidaf.sh` script with your learned model in `my_awesome_model/model.tar.gz`
+   3. Run the `evaluate_bidaf.sh` script with your learned model in `my_awesome_model/model.tar.gz`:
+
     ```
      sh scripts/evaluate_solver.sh \
         data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
