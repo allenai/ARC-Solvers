@@ -17,7 +17,7 @@ fi
 input_file_prefix=${input_file%.jsonl}
 model_name=$(basename ${model_dir})
 
-# File containing retrieved HITS per choice (using the key "support")
+# File containing retrieved hits per choice (using the key "support")
 input_file_with_hits=${input_file_prefix}_with_hits_${run_name}.jsonl
 # File containing the entailment examples per choice (using the keys "premise" and "hypothesis")
 input_file_as_entailment=${input_file_prefix}_as_entailment_${run_name}.jsonl
@@ -29,7 +29,7 @@ entailment_predictions=${input_file_prefix}_predictions_${model_name}_${run_name
 qa_predictions=${input_file_prefix}_qapredictions_${model_name}_${run_name}.jsonl
 
 
-# Collect HITS from ElasticSearch for each question + answer choice
+# Collect hits from ElasticSearch for each question + answer choice
 if [ ! -f ${input_file_with_hits} ]; then
 	python asq_solvers/processing/add_retrieved_text.py \
 		${input_file} \

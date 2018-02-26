@@ -18,20 +18,20 @@ fi
 input_file_prefix=${input_file%.jsonl}
 model_name=$(basename ${bidaf_model%.tar.gz})
 
-# File containing retrieved HITS per choice (using the key "support")
+# File containing retrieved hits per choice (using the key "support")
 input_file_with_hits=${input_file_prefix}_with_hits_${run_name}.jsonl
 
-# File with all the HITS combined per question (using the key "para")
+# File with all the hits combined per question (using the key "para")
 bidaf_input=${input_file_prefix}_with_paras_${run_name}.jsonl
 
-# Collect HITS from ElasticSearch for each question + answer choice
+# Collect hits from ElasticSearch for each question + answer choice
 if [ ! -f ${input_file_with_hits} ]; then
 	python asq_solvers/processing/add_retrieved_text.py \
 		${input_file} \
 		${input_file_with_hits}
 fi
 
-# Merge HITS for each question
+# Merge hits for each question
 if [ ! -f ${bidaf_input} ]; then
 	python asq_solvers/processing/convert_to_para_comprehension.py \
 	${input_file_with_hits} \
