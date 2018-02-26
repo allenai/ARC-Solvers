@@ -60,7 +60,7 @@ from allennlp.common.util import JsonDict
 from tqdm._tqdm import tqdm
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))))
-from asq_solvers.processing.es_search import EsSearch, EsHit
+from arc_solvers.processing.es_search import EsSearch, EsHit
 
 MAX_HITS = 8
 es_search = EsSearch(max_hits_per_choice=MAX_HITS, max_hits_retrieved=100)

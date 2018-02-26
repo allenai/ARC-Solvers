@@ -11,14 +11,15 @@ mkdir -p data/
 cd data/
 
 QUESTIONS_URL="https://s3-us-west-2.amazonaws.com/ai2-website/data/ARC-V1-Feb2018.zip"
-MODELS_URL=""
+MODELS_URL="https://s3-us-west-2.amazonaws.com/ai2-website/data/ARC-V1-Models-Feb2018.zip""
+
 # Download the questions
 wget $QUESTIONS_URL
 unzip $(basename $QUESTIONS_URL)
 
 # Download the model
 wget $MODELS_URL
-unzip $(basename $QUESTIONS_URL)
+unzip $(basename $MODELS_URL)
 
 cd ..
 
@@ -27,4 +28,3 @@ python scripts/index-corpus.py \
 	data/ARC-V1-Feb2018/ARC_Corpus.txt \
 	arc_corpus \
 	$ES_HOST
-

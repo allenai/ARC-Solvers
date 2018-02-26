@@ -1,20 +1,25 @@
 # ARC-Solvers
-Library of baseline solvers for AI2 Reasoning Challenge (ARC) Set (http://data.allenai.org/arc/). 
-These solvers retrieve relevant sentences from a large text corpus (ARC_Corpus.txt in the dataset), 
-use an entailment model to compute the score for each `(retrieved sentence, question+answer choice as an assertion)` pair
- and return the answer choices with the highest support i.e. entailment score. 
+Library of baseline solvers for AI2 Reasoning Challenge (ARC) Set (http://data.allenai.org/arc/).
+These solvers retrieve relevant sentences from a large text corpus (ARC_Corpus.txt in the
+dataset), and use two types of models to compute the QA score.
+ 1. An entailment-based model that computes the entailment score for each `(retrieved sentence,
+ question+answer choice as an assertion)` pair and scores each answer choice based on the
+ highest-scoring sentence.
+ 2. A reading comprehension model (BiDAF) that converts the retrieved sentences into a paragraph
+ per question. The model is used to predict the best answer span and each answer choice is scored
+  based on the overlap with the predicted span.
  
  ## Setup environment
- 1. Create the `asq_solvers` environment using Anaconda
+ 1. Create the `arc_solvers` environment using Anaconda
  
    ```
-   conda create -n asq_solvers python=3.6
+   conda create -n arc_solvers python=3.6
    ```
  
  2. Activate the environment
  
    ```
-   source activate asq_solvers
+   source activate arc_solvers
    ```
  
  3. Install the requirements in the environment: 
@@ -23,30 +28,39 @@ use an entailment model to compute the score for each `(retrieved sentence, ques
    sh scripts/install_requirements.sh
    ```
  
- 4. Install pytorch as per instructions on <http://pytorch.org/>. Command as of Jan. 9, 2018:
+ 4. Install pytorch as per instructions on <http://pytorch.org/>. Command as of Feb. 26, 2018:
  
    ```
-   conda install pytorch torchvision -c soumith`
+   conda install pytorch torchvision -c pytorch
    ```
   
 
  ## Setup data/models
- 1. Download the data and models into `data/` folder
+ 1. Download the data and models into `data/` folder. This will also build the ElasticSearch
+ index (assumes ElasticSearch 6+ is running on `ES_HOST` machine defined in the script)
   ```
   sh scripts/download_data.sh
   ```
   
- 2. Index text corpus and run ElasticSearch
-  ```
-  TBD
-  ``` 
  
  ## Running baseline models
- Run the DGEM solver against the challenge set i.e., `data/ASQ-Challenge/ASQ-Challenge-Test.jsonl`
-  
-   ```
-    sh scripts/evaluate_solver.sh data/ASQ-Challenge/ASQ-Challenge-Test.jsonl data/models/dgem/
-   ```
+ Run the entailment-based baseline solvers against a question set using `scripts/evaluate_solver.sh`
+
+ For example, to evaluate the DGEM model on the Challenge Set, run:
+```
+sh scripts/evaluate_solver.sh \
+	data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
+	data/ARC-V1-Models-Feb2018/dgem/
+```
+  Change `dgem` to `decompatt` to test the Decomposable Attention model.
+
+ To evaluate the BiDAF model, use the `evaluate_bidaf.sh` script
+```
+ sh scripts/evaluate_bidaf.sh \
+    data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
+    data/ARC-V1-Models-Feb2018/bidaf/
+```
+
  
  ## Running against a new question set
  To run the baseline solvers against a new question set, create a file using the JSONL format.
@@ -66,16 +80,16 @@ use an entailment model to compute the score for each `(retrieved sentence, ques
     },
     "answerKey":"A"}
  ``` 
-  Run the evaluation script on this new file using: `sh scripts/evaluate_solver.sh new_file.jsonl`
+  Run the evaluation scripts on this new file using the same commands as above.
   
   
- ## Running a new model
+ ## Running a new entailment-based model
   To run a new entailment model (implemented using AllenNLP), you need to 
    1. Create a `Predictor` that converts the input JSON to an `Instance` expected by your 
-   entailment model. See [DecompAttPredictor](asq_solvers/service/predictors/decompatt_qa_predictor.py)
+   entailment model. See [DecompAttPredictor](arc_solvers/service/predictors/decompatt_qa_predictor.py)
    for an example.
      
-   2. Add your custom predictor to the [predictor overrides](blob/basic_solver/asq_solvers/commands/__init__.py#L7)
+   2. Add your custom predictor to the [predictor overrides](arc_solvers/commands/__init__.py#L7)
    For example, if your new model is registered using `my_awesome_model` and the predictor is 
    registered using `my_awesome_predictor`, add `"my_awesome_model": "my_awesome_predictor"` to 
    the `predictor_overrides`.
@@ -83,7 +97,24 @@ use an entailment model to compute the score for each `(retrieved sentence, ques
    3. Run the `evaluate_solver.sh` script with your learned model in `my_awesome_model/model.tar.gz`
     ```
      sh scripts/evaluate_solver.sh \
-        data/ASQ-Challenge/ASQ-Challenge-Test.jsonl \ 
+        data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
+        my_awesome_model/
+    ```
+     
+## Running a new Reading Comprehension model
+ To run a new reading comprehension (RC) model (implemented using AllenNLP), you need to
+   1. Create a `Predictor` that converts the input JSON to an `Instance` expected by your
+   RC model. See [BidafQaPredictor](arc_solvers/service/predictors/bidaf_qa_predictor.py)
+   for an example.
+
+   2. Add your custom predictor to the [predictor overrides](arc_solvers/commands/__init__.py#L7)
+   For example, if your new model is registered using `my_awesome_model` and the predictor is
+   registered using `my_awesome_predictor`, add `"my_awesome_model": "my_awesome_predictor"` to
+   the `predictor_overrides`.
+
+   3. Run the `evaluate_bidaf.sh` script with your learned model in `my_awesome_model/model.tar.gz`
+    ```
+     sh scripts/evaluate_solver.sh \
+        data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
         my_awesome_model/
     ``` 
-     
