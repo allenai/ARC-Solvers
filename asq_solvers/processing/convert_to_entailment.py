@@ -11,8 +11,11 @@ JSONL format of files
       "stem": "George wants to warm his hands quickly by rubbing them. Which skin surface will
                produce the most heat?"
       "choice": {"text": "dry palms", "label": "A"},
-      "support": "Use hand sanitizers according to directions, which usually involves rubbing for
+       "support": {
+         "text": "Use hand sanitizers according to directions, which usually involves rubbing for
                   at least ten seconds, then allowing hands to air dry."
+         ...
+        }
     },
      "answerKey":"A"
   }
@@ -24,8 +27,11 @@ JSONL format of files
       "stem": "George wants to warm his hands quickly by rubbing them. Which skin surface will
                produce the most heat?"
       "choice": {"text": "dry palms", "label": "A"},
-      "support": "Use hand sanitizers according to directions, which usually involves rubbing for
+      "support": {
+         "text": "Use hand sanitizers according to directions, which usually involves rubbing for
                   at least ten seconds, then allowing hands to air dry."
+         ...
+        }
     },
      "answerKey":"A",
      "premise": "Use hand sanitizers according to directions, which usually involves rubbing for

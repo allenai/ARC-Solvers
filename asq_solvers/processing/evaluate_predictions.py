@@ -116,8 +116,6 @@ def score_predictions(qid_choice_predictions: Dict[str, Dict[str, List[JsonDict]
             json_line["question_score"] = question_score
             num_questions += 1
             output_handle.write(json.dumps(json_line) + "\n")
-        print("Metrics:\n\tScore={}\n\tQuestions:{}\n\tExam Score:{:.5f}".format(
-            total_score, num_questions, (total_score / num_questions)))
 
 
 def update_choice_with_scores(choice_predictions: List[JsonDict],

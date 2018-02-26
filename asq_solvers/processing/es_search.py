@@ -34,9 +34,9 @@ class EsSearch:
         :param indices: Comma-separated list of indices to search over
         :param max_question_length: Max number of characters used from the question for the
         query (for efficiency)
-        :param max_hits_retrieved: Max number of HITS requested from ElasticSearch
-        :param max_hit_length: Max number of characters for accepted HITS
-        :param max_hits_per_choice: Max number of HITS returned per answer choice
+        :param max_hits_retrieved: Max number of hits requested from ElasticSearch
+        :param max_hit_length: Max number of characters for accepted hits
+        :param max_hits_per_choice: Max number of hits returned per answer choice
         """
         self._es = Elasticsearch([es_client], retries=3)
         self._indices = indices
@@ -51,7 +51,7 @@ class EsSearch:
         """
         :param question: Question text
         :param choices: List of answer choices
-        :return: Dictionary of HITS per answer choice
+        :return: Dictionary of hits per answer choice
         """
         choice_hits = dict()
         for choice in choices:
@@ -77,7 +77,7 @@ class EsSearch:
                     }
                 }}
 
-    # Retrieve unfiltered HITS for input question and answer choice
+    # Retrieve unfiltered hits for input question and answer choice
     def get_hits_for_choice(self, question, choice):
         res = self._es.search(index=self._indices, body=self.construct_qa_query(question, choice))
         hits = []
@@ -89,7 +89,7 @@ class EsSearch:
             hits.append(es_hit)
         return hits
 
-    # Remove HITS that contain negation, are too long, are duplicates, are noisy.
+    # Remove hits that contain negation, are too long, are duplicates, are noisy.
     def filter_hits(self, hits: List[EsHit]) -> List[EsHit]:
         filtered_hits = []
         selected_hit_keys = set()

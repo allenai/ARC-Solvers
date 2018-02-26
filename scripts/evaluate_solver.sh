@@ -1,29 +1,35 @@
 #!/bin/bash
-
 set -e
+
+# ----------------------------------------------------------------
+# Evaluate an entailment model (DGEM/DecompAtt) on the QA dataset
+# ----------------------------------------------------------------
 
 input_file=$1
 model_dir=$2
-
-if [ ! -n "model_dir" ] ; then
+# Set this to name your run
+run_name=default
+if [ -z $model_dir ] ; then
   echo "USAGE: ./scripts/evaluate_solver.sh question_file.jsonl model_dir/"
   exit 1
 fi
+
 input_file_prefix=${input_file%.jsonl}
 model_name=$(basename ${model_dir})
 
-# File containing retrieved HITS per choice (using the key "support")
-input_file_with_hits=${input_file_prefix}_with_hits.jsonl
+# File containing retrieved hits per choice (using the key "support")
+input_file_with_hits=${input_file_prefix}_with_hits_${run_name}.jsonl
 # File containing the entailment examples per choice (using the keys "premise" and "hypothesis")
-input_file_as_entailment=${input_file_prefix}_as_entailment.jsonl
+input_file_as_entailment=${input_file_prefix}_as_entailment_${run_name}.jsonl
 # File containing Open IE structure for the hypothesis (using the key "hypothesisStructure")
-input_file_as_entailment_with_struct=${input_file_prefix}_as_entailment_with_struct.jsonl
+input_file_as_entailment_with_struct=${input_file_prefix}_as_entailment_with_struct_${run_name}.jsonl
 # File containing the entailment predictions per HIT and answer choice (using the key "score")
-entailment_predictions=${input_file_prefix}_predictions_${model_name}.jsonl
+entailment_predictions=${input_file_prefix}_predictions_${model_name}_${run_name}.jsonl
 # File containing the QA predictions per question (using the key "selected_answers")
-qa_predictions=${input_file_prefix}_qapredictions_${model_name}.jsonl
+qa_predictions=${input_file_prefix}_qapredictions_${model_name}_${run_name}.jsonl
 
-# Collect HITS from ElasticSearch for each question + answer choice
+
+# Collect hits from ElasticSearch for each question + answer choice
 if [ ! -f ${input_file_with_hits} ]; then
 	python asq_solvers/processing/add_retrieved_text.py \
 		${input_file} \
@@ -41,7 +47,7 @@ fi
 
 # Add structure to the entailment data
 if [ ! -f ${input_file_as_entailment_with_struct} ]; then
-	java -jar data/question-tuplizer.jar \
+	java -Xmx8G -jar data/question-tuplizer-simple.jar \
 		${input_file_as_entailment} \
 		${input_file_as_entailment_with_struct}
 fi
@@ -61,3 +67,5 @@ if [ ! -f ${qa_predictions} ]; then
 		${input_file} \
 		${qa_predictions}
 fi
+
+python asq_solvers/processing/produce_scores.py ${qa_predictions}
