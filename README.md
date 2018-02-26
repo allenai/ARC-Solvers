@@ -1,7 +1,7 @@
-# ASQ-Solvers
-Library of baseline solvers for Aristo Science Questions (ASQ) Set (TBD URL). These solvers 
-retrieve relevant sentences from a large text corpus (available at TBD), use an entailment model 
-to compute the score for each `(retrieved sentence, question+answer choice as an assertion)` pair
+# ARC-Solvers
+Library of baseline solvers for AI2 Reasoning Challenge (ARC) Set (http://data.allenai.org/arc/). 
+These solvers retrieve relevant sentences from a large text corpus (ARC_Corpus.txt in the dataset), 
+use an entailment model to compute the score for each `(retrieved sentence, question+answer choice as an assertion)` pair
  and return the answer choices with the highest support i.e. entailment score. 
  
  ## Setup environment

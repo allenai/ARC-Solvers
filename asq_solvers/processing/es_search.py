@@ -23,7 +23,7 @@ class EsHit:
 class EsSearch:
     def __init__(self,
                  es_client: str = "localhost",
-                 indices: str = "busc",
+                 indices: str = "arc_corpus",
                  max_question_length: int = 1000,
                  max_hits_retrieved: int = 500,
                  max_hit_length: int = 300,

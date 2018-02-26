@@ -3,12 +3,28 @@
 # Fail if any command fails
 set -e
 
+# NOTE: Make sure ElasticSearch v6+ is running on ES_HOST. Update es_search.py if you are not
+# running ElasticSearch on your localhost
+ES_HOST="localhost"
+
 mkdir -p data/
-# TODO: Update the urls
-QUESTIONS_URL=""
+cd data/
+
+QUESTIONS_URL="https://s3-us-west-2.amazonaws.com/ai2-website/data/ARC-V1-Feb2018.zip"
 MODELS_URL=""
 # Download the questions
-# Download the model
-# Start a local elastic search client
+wget $QUESTIONS_URL
+unzip $(basename $QUESTIONS_URL)
 
+# Download the model
+wget $MODELS_URL
+unzip $(basename $QUESTIONS_URL)
+
+cd ..
+
+# Build the index
+python scripts/index-corpus.py \
+	data/ARC-V1-Feb2018/ARC_Corpus.txt \
+	arc_corpus \
+	$ES_HOST
 
