@@ -11,7 +11,7 @@ mkdir -p data/
 cd data/
 
 QUESTIONS_URL="https://s3-us-west-2.amazonaws.com/ai2-website/data/ARC-V1-Feb2018.zip"
-MODELS_URL="https://s3-us-west-2.amazonaws.com/ai2-website/data/ARC-V1-Models-Feb2018.zip""
+MODELS_URL="https://s3-us-west-2.amazonaws.com/ai2-website/data/ARC-V1-Models-Feb2018.zip"
 
 # Download the questions
 wget $QUESTIONS_URL

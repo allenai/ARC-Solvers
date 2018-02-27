@@ -1,7 +1,7 @@
 # ARC-Solvers
 Library of baseline solvers for AI2 Reasoning Challenge (ARC) Set (http://data.allenai.org/arc/).
 These solvers retrieve relevant sentences from a large text corpus (ARC_Corpus.txt in the
-dataset), and use two types of models to compute the QA score.
+dataset), and use two types of models to predict the correct answer.
  1. An entailment-based model that computes the entailment score for each `(retrieved sentence,
  question+answer choice as an assertion)` pair and scores each answer choice based on the
  highest-scoring sentence.
