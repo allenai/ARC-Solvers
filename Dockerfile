@@ -33,7 +33,7 @@ COPY requirements.txt .
 COPY scripts/install_requirements.sh scripts/install_requirements.sh
 RUN ./scripts/install_requirements.sh
 
-COPY asq_solvers/ asq_solvers/
+COPY arc_solvers/ arc_solvers/
 COPY scripts/ scripts/
 RUN ./scripts/download_data.sh
 

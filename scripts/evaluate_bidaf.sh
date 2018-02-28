@@ -6,17 +6,17 @@ set -e
 # ----------------------------------------
 
 input_file=$1
-bidaf_model=$2
+model_dir=$2
 # Set this to name your run
 run_name=default
 
-if [ -z $bidaf_model ] ; then
-  echo "USAGE: ./scripts/evaluate_bidaf.sh question_file.jsonl bidaf_model.tar.gz"
+if [ -z $model_dir ] ; then
+  echo "USAGE: ./scripts/evaluate_bidaf.sh question_file.jsonl model_dir"
   exit 1
 fi
 
 input_file_prefix=${input_file%.jsonl}
-model_name=$(basename ${bidaf_model%.tar.gz})
+model_name=$(basename ${model_dir})
 
 # File containing retrieved hits per choice (using the key "support")
 input_file_with_hits=${input_file_prefix}_with_hits_${run_name}.jsonl
@@ -44,7 +44,7 @@ bidaf_output=${input_file_prefix}_qapredictions_bidaf_${model_name}_${run_name}.
 if [ ! -f ${bidaf_output} ]; then
 	python asq_solvers/run.py predict \
 				--output-file ${bidaf_output} --silent \
-				${bidaf_model} \
+				${model_dir}/model.tar.gz \
 				${bidaf_input}
 fi
 

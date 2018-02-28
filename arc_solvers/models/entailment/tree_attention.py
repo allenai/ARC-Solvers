@@ -26,8 +26,8 @@ from allennlp.training.metrics import CategoricalAccuracy
 from numpy.core.arrayprint import array2string, set_printoptions
 from torch import FloatTensor
 
-from asq_solvers.modules.single_time_distributed import SingleTimeDistributed
-from asq_solvers.nn.util import masked_mean
+from arc_solvers.modules.single_time_distributed import SingleTimeDistributed
+from arc_solvers.nn.util import masked_mean
 
 
 @Model.register("tree_attention")

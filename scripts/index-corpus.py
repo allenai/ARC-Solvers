@@ -10,14 +10,15 @@ import argparse, elasticsearch, json
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-if __name__=="__main__":
+if __name__ == "__main__":
 
     # Arguments
-    parser = argparse.ArgumentParser(description='Add lines from a file to a simple text Elasticsearch index.')
+    parser = argparse.ArgumentParser(
+        description='Add lines from a file to a simple text Elasticsearch index.')
     parser.add_argument('file', help='Path of file to index, e.g. /path/to/my_corpus.txt')
     parser.add_argument('index', help='Name of index to create')
     parser.add_argument('host', help='Elasticsearch host.')
-    parser.add_argument('-p','--port', default=9200, help='port, default is 9200')
+    parser.add_argument('-p', '--port', default=9200, help='port, default is 9200')
     args = parser.parse_args()
 
     # Get Index Name
@@ -27,7 +28,7 @@ if __name__=="__main__":
     TYPE = "sentence"
 
     # Get an ElasticSearch client
-    es = Elasticsearch(hosts=[{"host":args.host, "port":args.port}])
+    es = Elasticsearch(hosts=[{"host": args.host, "port": args.port}], retries=3, timeout=60)
 
     # Mapping used to index all corpora used in Aristo solvers
     mapping = '''
@@ -37,58 +38,57 @@ if __name__=="__main__":
           "dynamic": "false",
           "properties": {
             "docId": {
-              "index": "not_analyzed",
-              "type": "string"
+              "type": "keyword"
             },
             "text": {
               "analyzer": "snowball",
-              "type": "string",
+              "type": "text",
               "fields": {
                 "raw": {
-                  "index": "not_analyzed",
-                  "type": "string"
+                  "type": "keyword"
                 }
               }
             },
             "tags": {
-              "index": "not_analyzed",
-              "type": "string"
+              "type": "keyword"
             }
           }
         }
       }
     }'''
 
-    
     # Function that constructs a json body to add each line of the file to index
     def make_documents(f):
+        doc_id = 0
         for l in f:
             doc = {
-                    '_op_type': 'create',
-                    '_index': index_name,
-                    '_type': TYPE,
-                    '_source': {'text': l.strip() }
+                '_op_type': 'create',
+                '_index': index_name,
+                '_type': TYPE,
+                '_id': doc_id,
+                '_source': {'text': l.strip()}
             }
-            yield(doc)
-
+            doc_id += 1
+            yield (doc)
 
     # Create an index, ignore if it exists already
     try:
         res = es.indices.create(index=index_name, ignore=400, body=mapping)
 
         # Bulk-insert documents into index
-        with open(args.file, "r") as f:            
+        with open(args.file, "r") as f:
             res = bulk(es, make_documents(f))
             doc_count = res[0]
 
         # Test Search.
         print("Index {0} is ready. Added {1} documents.".format(index_name, doc_count))
         query = input("Enter a test search phrase: ")
-        result = es.search(index=index_name, doc_type=TYPE, body={"query": {"match": {"text": query.strip()}}})
+        result = es.search(index=index_name, doc_type=TYPE,
+                           body={"query": {"match": {"text": query.strip()}}})
         if result.get('hits') is not None and result['hits'].get('hits') is not None:
             print(result['hits']['hits'])
         else:
             print({})
-   
+
     except Exception as inst:
         print(inst)
