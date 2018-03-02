@@ -60,13 +60,13 @@ def calculate_scores(qa_predictions: str) -> None:
             num_questions += 1
 
         print("""Metrics:
-       Score={:.5f}
+       Total Points={:.2f}
        Questions:{}
-       Exam Score:{:.5f}
+       Exam Score:{:.2f}
           Correct:      {}
           Incorrect:    {}
           Partial:      {}
-                """.format(total_score, num_questions, (total_score / num_questions),
+                """.format(total_score, num_questions, (total_score / num_questions)*100,
                            correct, incorrect, partially_correct))
 
 

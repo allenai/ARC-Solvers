@@ -31,7 +31,7 @@ qa_predictions=${input_file_prefix}_qapredictions_${model_name}_${run_name}.json
 
 # Collect hits from ElasticSearch for each question + answer choice
 if [ ! -f ${input_file_with_hits} ]; then
-	python asq_solvers/processing/add_retrieved_text.py \
+	python arc_solvers/processing/add_retrieved_text.py \
 		${input_file} \
 		${input_file_with_hits}
 fi
@@ -40,7 +40,7 @@ fi
 # the JSONL file where premise is the retrieved HIT for each answer choice and hypothesis is the
 # question + answer choice converted into a statement.
 if [ ! -f ${input_file_as_entailment} ]; then
-	python asq_solvers/processing/convert_to_entailment.py \
+	python arc_solvers/processing/convert_to_entailment.py \
 		${input_file_with_hits} \
 		${input_file_as_entailment}
 fi
@@ -54,7 +54,7 @@ fi
 
 # Compute entailment predictions for each premise and hypothesis
 if [ ! -f ${entailment_predictions} ]; then
-	python asq_solvers/run.py predict \
+	python arc_solvers/run.py predict \
 		--output-file ${entailment_predictions} --silent \
 		${model_dir}/model.tar.gz ${input_file_as_entailment_with_struct}
 fi
@@ -62,10 +62,10 @@ fi
 # Compute qa predictions by aggregating the entailment predictions for each question+answer
 # choice (using max)
 if [ ! -f ${qa_predictions} ]; then
-	python asq_solvers/processing/evaluate_predictions.py \
+	python arc_solvers/processing/evaluate_predictions.py \
 		${entailment_predictions} \
 		${input_file} \
 		${qa_predictions}
 fi
 
-python asq_solvers/processing/produce_scores.py ${qa_predictions}
+python asq_solvers/processing/calculate_scores.py ${qa_predictions}
