@@ -68,4 +68,4 @@ if [ ! -f ${qa_predictions} ]; then
 		${qa_predictions}
 fi
 
-python asq_solvers/processing/calculate_scores.py ${qa_predictions}
+python arc_solvers/processing/calculate_scores.py ${qa_predictions}
