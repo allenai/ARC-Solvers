@@ -49,7 +49,7 @@ dataset), and use two types of models to predict the correct answer.
  For example, to evaluate the DGEM model on the Challenge Set, run:
 ```
 sh scripts/evaluate_solver.sh \
-	data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
+	data/ARC-V1-Feb2018-2/ARC-Challenge/ARC-Challenge-Test.jsonl \
 	data/ARC-V1-Models-Feb2018/dgem/
 ```
   Change `dgem` to `decompatt` to test the Decomposable Attention model.
@@ -57,7 +57,7 @@ sh scripts/evaluate_solver.sh \
  To evaluate the BiDAF model, use the `evaluate_bidaf.sh` script
 ```
  sh scripts/evaluate_bidaf.sh \
-    data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
+    data/ARC-V1-Feb2018-2/ARC-Challenge/ARC-Challenge-Test.jsonl \
     data/ARC-V1-Models-Feb2018/bidaf/
 ```
 
@@ -98,7 +98,7 @@ sh scripts/evaluate_solver.sh \
 
     ```
      sh scripts/evaluate_solver.sh \
-        data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
+        data/ARC-V1-Feb2018-2/ARC-Challenge/ARC-Challenge-Test.jsonl \
         my_awesome_model/
     ```
      
@@ -117,6 +117,6 @@ sh scripts/evaluate_solver.sh \
 
     ```
      sh scripts/evaluate_solver.sh \
-        data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
+        data/ARC-V1-Feb2018-2/ARC-Challenge/ARC-Challenge-Test.jsonl \
         my_awesome_model/
     ``` 
