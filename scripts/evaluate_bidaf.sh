@@ -26,29 +26,29 @@ bidaf_input=${input_file_prefix}_with_paras_${run_name}.jsonl
 
 # Collect hits from ElasticSearch for each question + answer choice
 if [ ! -f ${input_file_with_hits} ]; then
-	python arc_solvers/processing/add_retrieved_text.py \
-		${input_file} \
-		${input_file_with_hits}.$$
-	mv ${input_file_with_hits}.$$ ${input_file_with_hits}
+  python arc_solvers/processing/add_retrieved_text.py \
+    ${input_file} \
+    ${input_file_with_hits}.$$
+  mv ${input_file_with_hits}.$$ ${input_file_with_hits}
 fi
 
 # Merge hits for each question
 if [ ! -f ${bidaf_input} ]; then
-	python arc_solvers/processing/convert_to_para_comprehension.py \
+  python arc_solvers/processing/convert_to_para_comprehension.py \
     ${input_file_with_hits} \
     ${input_file} \
     ${bidaf_input}.$$
-	mv ${bidaf_input}.$$ ${bidaf_input}
+  mv ${bidaf_input}.$$ ${bidaf_input}
 fi
 
 # Run BiDafModel
 bidaf_output=${input_file_prefix}_qapredictions_bidaf_${model_name}_${run_name}.jsonl
 if [ ! -f ${bidaf_output} ]; then
-	python arc_solvers/run.py predict \
+  python arc_solvers/run.py predict \
     --output-file ${bidaf_output} --silent \
     ${model_dir}/model.tar.gz \
     ${bidaf_input}.$$
-	mv ${bidaf_input}.$$ ${bidaf_input}
+  mv ${bidaf_input}.$$ ${bidaf_input}
 fi
 
 python arc_solvers/processing/calculate_scores.py ${bidaf_output}
