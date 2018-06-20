@@ -7,3 +7,4 @@
 
 # Intellij specific
 /.idea/
+/*.iml
