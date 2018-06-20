@@ -17,6 +17,8 @@ MODELS_URL="https://s3-us-west-2.amazonaws.com/ai2-website/data/ARC-V1-Models-Fe
 # Download the questions
 wget $QUESTIONS_URL
 unzip $(basename $QUESTIONS_URL)
+mv ARC-V1-Feb2018-2 ARC-V1-Feb2018
+rm -rf __MACOSX
 
 # Download the model
 wget $MODELS_URL
