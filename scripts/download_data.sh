@@ -2,6 +2,7 @@
 
 # Fail if any command fails
 set -e
+set -x
 
 # NOTE: Make sure ElasticSearch v6+ is running on ES_HOST. Update es_search.py if you are not
 # running ElasticSearch on your localhost
