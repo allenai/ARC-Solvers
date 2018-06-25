@@ -45,10 +45,10 @@ fi
 bidaf_output=${input_file_prefix}_qapredictions_bidaf_${model_name}_${run_name}.jsonl
 if [ ! -f ${bidaf_output} ]; then
   python arc_solvers/run.py predict \
-    --output-file ${bidaf_output} --silent \
+    --output-file ${bidaf_output}.$$ --silent \
     ${model_dir}/model.tar.gz \
-    ${bidaf_input}.$$
-  mv ${bidaf_input}.$$ ${bidaf_input}
+    ${bidaf_input}
+  mv ${bidaf_output}.$$ ${bidaf_output}
 fi
 
 python arc_solvers/processing/calculate_scores.py ${bidaf_output}
