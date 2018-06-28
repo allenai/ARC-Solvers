@@ -1,1 +1,2 @@
 from arc_solvers.models.entailment.tree_attention import TreeAttention
+from arc_solvers.models.qa.multi_choice.qa_multi_choice_max_att import QAMultiChoiceMaxAttention
