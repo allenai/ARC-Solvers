@@ -13,7 +13,6 @@ import tqdm
 from allennlp.common import Params
 from allennlp.common.checks import ConfigurationError
 from allennlp.common.file_utils import cached_path
-from allennlp.data.dataset import Dataset
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
 from allennlp.data.fields import Field, TextField, LabelField
 from allennlp.data.fields.index_field import IndexField
@@ -53,7 +52,7 @@ class EntailmentTupleReader(DatasetReader):
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
 
     @overrides
-    def read(self, file_path: str):
+    def _read(self, file_path: str):
         # if `file_path` is a URL, redirect to the cache
         file_path = cached_path(file_path)
         instances = []
@@ -71,7 +70,7 @@ class EntailmentTupleReader(DatasetReader):
         if not instances:
             raise ConfigurationError("No instances were read from the given filepath {}. "
                                      "Is the path correct?".format(file_path))
-        return Dataset(instances)
+        return Instance(instances)
 
     @overrides
     def text_to_instance(self,
