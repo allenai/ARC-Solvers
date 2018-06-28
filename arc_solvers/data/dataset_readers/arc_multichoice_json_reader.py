@@ -48,7 +48,7 @@ class ArcMultiChoiceJsonReader(DatasetReader):
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
 
     @overrides
-    def _read(self, file_path: str):
+    def read(self, file_path: str):
         # if `file_path` is a URL, redirect to the cache
         file_path = cached_path(file_path)
 

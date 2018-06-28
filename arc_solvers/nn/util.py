@@ -7,8 +7,6 @@ from typing import Union, Dict
 import torch
 from allennlp.modules import MatrixAttention, Seq2SeqEncoder
 
-from skidls.nn.util import seq2vec_seq_aggregate
-
 def masked_mean(tensor, dim, mask):
     """
     ``Performs a mean on just the non-masked portions of the ``tensor`` in the
