@@ -1,4 +1,4 @@
-from allennlp.modules.matrix_attention import LegacyMatrixAttention
+from allennlp.modules.matrix_attention import MatrixAttention
 from typing import Dict, Optional, AnyStr, List, Any
 
 import torch
@@ -114,7 +114,7 @@ class QAMultiChoiceMaxAttention(Model):
             att_question_to_choice_params = update_params(att_question_to_choice_params,
                                                           {"tensor_1_dim": question_output_dim,
                                                            "tensor_2_dim": choice_output_dim})
-        self._matrix_attention_question_to_choice = LegacyMatrixAttention(
+        self._matrix_attention_question_to_choice = MatrixAttention(
             SimilarityFunction.from_params(att_question_to_choice_params))
 
         self._accuracy = CategoricalAccuracy()

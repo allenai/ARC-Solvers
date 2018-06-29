@@ -23,7 +23,7 @@
     "text_field_embedder": {
       "tokens": {
         "type": "embedding",
-        "pretrained_file": "../data/glove/glove.6B.300d.sample.txt.gz",
+        "pretrained_file": "data/glove/glove.6B.300d.sample.txt.gz",
         "embedding_dim": 300,
         "trainable": false
       }
@@ -48,8 +48,8 @@
     "choices_init_from_question_states": false,
     "choice_encoder_aggregate": "max",  //max, avg, sum, last
     "att_question_to_choice": {
-      "type": "linear_extended", // "linear", "dot",
-      "combination": "x,y,x*y,abs(x-y)",
+      "type": "linear", // "linear", "dot",
+      "combination": "x,y,x*y,x-y",
       "tensor_1_dim": 0,
       "tensor_2_dim": 0,
       "activation": "linear"

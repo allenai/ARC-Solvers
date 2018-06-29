@@ -2,6 +2,7 @@ from typing import Dict, List, Any
 import json
 import logging
 
+from allennlp.data import Dataset
 from overrides import overrides
 
 from allennlp.common import Params
@@ -52,6 +53,7 @@ class ArcMultiChoiceJsonReader(DatasetReader):
         # if `file_path` is a URL, redirect to the cache
         file_path = cached_path(file_path)
 
+        instances = []
         with open(file_path, 'r') as data_file:
             logger.info("Reading instances in ARC jsonl format from dataset at: %s", file_path)
             for line in data_file:
@@ -73,7 +75,9 @@ class ArcMultiChoiceJsonReader(DatasetReader):
 
                 answer_id = choice_label_to_id[item_json["answerKey"]]
 
-                yield self.text_to_instance(item_id, question_text, choice_text_list, answer_id)
+                instances.append(self.text_to_instance(item_id, question_text, choice_text_list, answer_id))
+
+        return Dataset(instances)
 
 
     @overrides

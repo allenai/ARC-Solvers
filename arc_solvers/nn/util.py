@@ -1,7 +1,8 @@
 import torch
 from allennlp.common.checks import ConfigurationError
 from allennlp.nn.util import replace_masked_values
-from allennlp.nn.util import get_text_field_mask, get_final_encoder_states
+from allennlp.nn.util import get_text_field_mask
+import allennlp
 from typing import Union, Dict
 
 import torch
@@ -49,7 +50,8 @@ def seq2vec_seq_aggregate(seq_tensor, mask, aggregate, bidirectional, dim=1):
     seq_tensor_masked = seq_tensor * mask.unsqueeze(-1)
     aggr_func = None
     if aggregate == "last":
-        seq = get_final_encoder_states(seq_tensor, mask, bidirectional)
+        raise NotImplemented("This is currently not supported.")
+        seq = allennlp.nn.util.get_final_encoder_states(seq_tensor, mask, bidirectional)
     elif aggregate == "max":
         aggr_func = torch.max
         seq, _ = aggr_func(seq_tensor_masked, dim=dim)
@@ -92,11 +94,11 @@ def embedd_encode_and_aggregate_text_field(question: Dict[str, torch.LongTensor]
 
     # aggregate sequences to a single item
     encoded_question_aggregated = seq2vec_seq_aggregate(encoded_question, question_mask, aggregation_type,
-                                                        encoder.is_bidirectional(), 1)  # bs X d
+                                                        None, 1)  # bs X d
 
     last_hidden_states = None
     if get_last_states:
-        last_hidden_states = get_final_encoder_states(encoded_question, question_mask, encoder.is_bidirectional())
+        last_hidden_states = allennlp.nn.util.get_final_encoder_states(encoded_question, question_mask, encoder.is_bidirectional())
 
     return encoded_question_aggregated, last_hidden_states
 
@@ -131,7 +133,7 @@ def embedd_encode_and_aggregate_list_text_field(texts_list: Dict[str, torch.Long
     embedded_texts_flattened = embedded_texts.view([bs * ch_cnt, ch_tkn_cnt, -1])
     # masks
 
-    texts_mask_dim_3 = get_text_field_mask(texts_list, num_wrapping_dims=1).float()
+    texts_mask_dim_3 = get_text_field_mask(texts_list).float()
     texts_mask_flatened = texts_mask_dim_3.view([-1, ch_tkn_cnt])
 
     # context encoding
@@ -154,7 +156,7 @@ def embedd_encode_and_aggregate_list_text_field(texts_list: Dict[str, torch.Long
 
     aggregated_choice_flattened = seq2vec_seq_aggregate(encoded_texts_flattened, texts_mask_flatened,
                                                         aggregation_type,
-                                                        encoder.is_bidirectional(),
+                                                        encoder,
                                                         1)  # bs*ch X d
 
     aggregated_choice_flattened_reshaped = aggregated_choice_flattened.view([bs, ch_cnt, -1])
