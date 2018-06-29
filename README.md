@@ -41,7 +41,14 @@ dataset), and use two types of models to predict the correct answer.
   ```
   sh scripts/download_data.sh
   ```
+
+ 2. Download and prepare embeddings. This will download glove.840B.300d.zip from https://nlp.stanford.edu/projects/glove/ and 
+ convert it to glove.840B.300d.txt.gz which is readible from AllenNLP
+   ```
+  sh download_and_prepare_glove.sh
+  ```
   
+   
  
  ## Running baseline models
  Run the entailment-based baseline solvers against a question set using `scripts/evaluate_solver.sh`
@@ -120,3 +127,11 @@ sh scripts/evaluate_solver.sh \
         data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
         my_awesome_model/
     ``` 
+    
+    
+## Running the BiLSTM max-out Question to Choices Max Attention
+To run the model, you need to have the data and embeddings downloaded.
+
+```bash
+python arc_solvers/run.py train -s /Users/todorm/research/temp/qa_multi_question_to_choices/serialization/ arc_solvers/training_config/qa/multi_choice/reader_qa_multi_choice_max_att_ARC_Chellenge_full.json
+```
