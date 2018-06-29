@@ -133,5 +133,5 @@ sh scripts/evaluate_solver.sh \
 To run the model, you need to have the data and embeddings downloaded.
 
 ```bash
-python arc_solvers/run.py train -s /Users/todorm/research/temp/qa_multi_question_to_choices/serialization/ arc_solvers/training_config/qa/multi_choice/reader_qa_multi_choice_max_att_ARC_Chellenge_full.json
+python arc_solvers/run.py train -s temp/qa_multi_question_to_choices/serialization/ arc_solvers/training_config/qa/multi_choice/reader_qa_multi_choice_max_att_ARC_Chellenge_full.json
 ```
