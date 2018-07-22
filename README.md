@@ -129,9 +129,9 @@ sh scripts/evaluate_solver.sh \
     ``` 
     
     
-## Running the BiLSTM max-out Question to Choices Max Attention
-To run the model, you need to have the data and embeddings downloaded.
+## Training the BiLSTM max-out Question to Choices Max Attention
+To train the model, you need to have the data and embeddings downloaded.
 
 ```bash
-python arc_solvers/run.py train -s temp/qa_multi_question_to_choices/serialization/ arc_solvers/training_config/qa/multi_choice/reader_qa_multi_choice_max_att_ARC_Chellenge_full.json
+python arc_solvers/run.py train -s trained_models/qa_multi_question_to_choices/serialization/ arc_solvers/training_config/qa/multi_choice/reader_qa_multi_choice_max_att_ARC_Chellenge_full.json
 ```
