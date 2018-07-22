@@ -50,7 +50,7 @@ def seq2vec_seq_aggregate(seq_tensor, mask, aggregate, bidirectional, dim=1):
     seq_tensor_masked = seq_tensor * mask.unsqueeze(-1)
     aggr_func = None
     if aggregate == "last":
-        raise NotImplemented("This is currently not supported.")
+        raise NotImplemented("This is currently not supported with AllenNLP 0.2.")
         seq = allennlp.nn.util.get_final_encoder_states(seq_tensor, mask, bidirectional)
     elif aggregate == "max":
         aggr_func = torch.max
@@ -70,12 +70,11 @@ def seq2vec_seq_aggregate(seq_tensor, mask, aggregate, bidirectional, dim=1):
     return seq
 
 
-def embedd_encode_and_aggregate_text_field(question: Dict[str, torch.LongTensor],
-                                           text_field_embedder,
-                                           embeddings_dropout,
-                                           encoder,
-                                           aggregation_type,
-                                           get_last_states=False):
+def embed_encode_and_aggregate_text_field(question: Dict[str, torch.LongTensor],
+                                          text_field_embedder,
+                                          embeddings_dropout,
+                                          encoder,
+                                          aggregation_type):
     """
     Given a batched token ids (2D) runs embeddings lookup with dropout, context encoding and aggregation
     :param question:
@@ -83,7 +82,6 @@ def embedd_encode_and_aggregate_text_field(question: Dict[str, torch.LongTensor]
     :param embeddings_dropout: Dropout
     :param encoder: Context encoder
     :param aggregation_type: The type of aggregation - max, sum, avg, last
-    :param get_last_states: If it should return the last states.
     :return:
     """
     embedded_question = text_field_embedder(question)
@@ -96,19 +94,15 @@ def embedd_encode_and_aggregate_text_field(question: Dict[str, torch.LongTensor]
     encoded_question_aggregated = seq2vec_seq_aggregate(encoded_question, question_mask, aggregation_type,
                                                         None, 1)  # bs X d
 
-    last_hidden_states = None
-    if get_last_states:
-        last_hidden_states = allennlp.nn.util.get_final_encoder_states(encoded_question, question_mask, encoder.is_bidirectional())
-
-    return encoded_question_aggregated, last_hidden_states
+    return encoded_question_aggregated
 
 
-def embedd_encode_and_aggregate_list_text_field(texts_list: Dict[str, torch.LongTensor],
-                                                text_field_embedder,
-                                                embeddings_dropout,
-                                                encoder: Seq2SeqEncoder,
-                                                aggregation_type,
-                                                init_hidden_states=None):
+def embed_encode_and_aggregate_list_text_field(texts_list: Dict[str, torch.LongTensor],
+                                               text_field_embedder,
+                                               embeddings_dropout,
+                                               encoder: Seq2SeqEncoder,
+                                               aggregation_type,
+                                               init_hidden_states=None):
     """
     Given a batched list of token ids (3D) runs embeddings lookup with dropout, context encoding and aggregation on
     :param question:
@@ -128,29 +122,29 @@ def embedd_encode_and_aggregate_list_text_field(texts_list: Dict[str, torch.Long
     embedded_texts = text_field_embedder(texts_list)
     embedded_texts = embeddings_dropout(embedded_texts)
 
-    bs, ch_cnt, ch_tkn_cnt, d = tuple(embedded_texts.shape)
+    batch_size, choices_cnt, choice_tokens_cnt, d = tuple(embedded_texts.shape)
 
-    embedded_texts_flattened = embedded_texts.view([bs * ch_cnt, ch_tkn_cnt, -1])
+    embedded_texts_flattened = embedded_texts.view([batch_size * choices_cnt, choice_tokens_cnt, -1])
     # masks
 
     texts_mask_dim_3 = get_text_field_mask(texts_list).float()
-    texts_mask_flatened = texts_mask_dim_3.view([-1, ch_tkn_cnt])
+    texts_mask_flatened = texts_mask_dim_3.view([-1, choice_tokens_cnt])
 
     # context encoding
     multiple_texts_init_states = None
     if init_hidden_states is not None:
-        if init_hidden_states.shape[0] == bs and init_hidden_states.shape[1] != ch_cnt:
+        if init_hidden_states.shape[0] == batch_size and init_hidden_states.shape[1] != choices_cnt:
             if init_hidden_states.shape[1] != encoder.get_output_dim():
                 raise ValueError("The shape of init_hidden_states is {0} but is expected to be {1} or {2}".format(str(init_hidden_states.shape),
-                                                                            str([bs, encoder.get_output_dim()]),
-                                                                            str([bs, ch_cnt, encoder.get_output_dim()])))
+                                                                            str([batch_size, encoder.get_output_dim()]),
+                                                                            str([batch_size, choices_cnt, encoder.get_output_dim()])))
             # in this case we passed only 2D tensor which is the default output from question encoder
-            multiple_texts_init_states = init_hidden_states.unsqueeze(1).expand([bs, ch_cnt, encoder.get_output_dim()]).contiguous()
+            multiple_texts_init_states = init_hidden_states.unsqueeze(1).expand([batch_size, choices_cnt, encoder.get_output_dim()]).contiguous()
 
             # reshape this to match the flattedned tokens
-            multiple_texts_init_states = multiple_texts_init_states.view([bs * ch_cnt, encoder.get_output_dim()])
+            multiple_texts_init_states = multiple_texts_init_states.view([batch_size * choices_cnt, encoder.get_output_dim()])
         else:
-            multiple_texts_init_states = init_hidden_states.view([bs * ch_cnt, encoder.get_output_dim()])
+            multiple_texts_init_states = init_hidden_states.view([batch_size * choices_cnt, encoder.get_output_dim()])
 
     encoded_texts_flattened = encoder(embedded_texts_flattened, texts_mask_flatened, hidden_state=multiple_texts_init_states)
 
@@ -159,6 +153,6 @@ def embedd_encode_and_aggregate_list_text_field(texts_list: Dict[str, torch.Long
                                                         encoder,
                                                         1)  # bs*ch X d
 
-    aggregated_choice_flattened_reshaped = aggregated_choice_flattened.view([bs, ch_cnt, -1])
+    aggregated_choice_flattened_reshaped = aggregated_choice_flattened.view([batch_size, choices_cnt, -1])
     return aggregated_choice_flattened_reshaped
 
