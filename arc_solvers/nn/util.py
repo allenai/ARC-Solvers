@@ -105,18 +105,13 @@ def embed_encode_and_aggregate_list_text_field(texts_list: Dict[str, torch.LongT
                                                init_hidden_states=None):
     """
     Given a batched list of token ids (3D) runs embeddings lookup with dropout, context encoding and aggregation on
-    :param question:
+    :param texts_list: List of texts
     :param text_field_embedder: The embedder to be used for embedding lookup
     :param embeddings_dropout: Dropout
     :param encoder: Context encoder
     :param aggregation_type: The type of aggregation - max, sum, avg, last
     :param get_last_states: If it should return the last states.
-    :param texts_list:
-    :param text_field_embedder:
-    :param embeddings_dropout:
-    :param encoder:
-    :param aggregation_type:
-    :param init_hidden_states:
+    :param init_hidden_states: Hidden states initialization
     :return:
     """
     embedded_texts = text_field_embedder(texts_list)
