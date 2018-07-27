@@ -26,9 +26,8 @@ def masked_mean(tensor, dim, mask):
     count_tensor = torch.sum((mask != 0), dim)
     # set zero count to 1 to avoid nans
     zero_count_mask = (count_tensor == 0)
+    zero_count_mask = zero_count_mask.long()
     count_plus_zeros = (count_tensor + zero_count_mask).float()
     # average
     mean_tensor = total_tensor / count_plus_zeros
     return mean_tensor
-
-
