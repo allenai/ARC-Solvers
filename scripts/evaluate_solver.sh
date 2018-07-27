@@ -1,6 +1,6 @@
 #!/bin/bash
-set -e
-
+set -x
+trap read debug
 # ----------------------------------------------------------------
 # Evaluate an entailment model (DGEM/DecompAtt) on the QA dataset
 # ----------------------------------------------------------------
