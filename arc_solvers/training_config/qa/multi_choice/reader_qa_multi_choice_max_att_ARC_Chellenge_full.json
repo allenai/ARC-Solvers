@@ -14,9 +14,9 @@
         },
     },
   },
-  "train_data_path": "../data/allenai/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Train.jsonl",
-  "validation_data_path": "../data/allenai/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Dev.jsonl",
-  "test_data_path": "../data/allenai/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl",
+  "train_data_path": "data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Train.jsonl",
+  "validation_data_path": "data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Dev.jsonl",
+  "test_data_path": "data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl",
   "evaluate_on_test": true,
   "model": {
     "type": "qa_multi_choice_max_att",
