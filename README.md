@@ -43,7 +43,7 @@ dataset), and use two types of models to predict the correct answer.
   ```
 
  2. Download and prepare embeddings. This will download glove.840B.300d.zip from https://nlp.stanford.edu/projects/glove/ and 
- convert it to glove.840B.300d.txt.gz which is readible from AllenNLP
+ convert it to glove.840B.300d.txt.gz which is readable from AllenNLP
    ```
   sh download_and_prepare_glove.sh
   ```
@@ -132,6 +132,15 @@ sh scripts/evaluate_solver.sh \
 ## Training the BiLSTM max-out Question to Choices Max Attention
 To train the model, you need to have the data and embeddings downloaded.
 
+Evaluate the trained model:
+```bash
+python arc_solvers/run.py evaluate --archive_file [URL_TO_model.tar.gz] --evaluation_data_file data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl 
+
+```
+
+or
+
+Train a new model:
 ```bash
 python arc_solvers/run.py train -s trained_models/qa_multi_question_to_choices/serialization/ arc_solvers/training_config/qa/multi_choice/reader_qa_multi_choice_max_att_ARC_Chellenge_full.json
 ```
