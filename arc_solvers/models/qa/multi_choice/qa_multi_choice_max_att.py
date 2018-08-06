@@ -65,18 +65,17 @@ class QAMultiChoiceMaxAttention(Model):
 
     def __init__(self, vocab: Vocabulary,
                  text_field_embedder: TextFieldEmbedder,
+                 att_question_to_choice: SimilarityFunction,
                  question_encoder: Optional[Seq2SeqEncoder] = None,
                  choice_encoder: Optional[Seq2SeqEncoder] = None,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  aggregate_question: Optional[str] = "max",
                  aggregate_choice: Optional[str] = "max",
-                 embeddings_dropout_value: Optional[float] = 0.0,
-                 params=Params) -> None:
+                 embeddings_dropout_value: Optional[float] = 0.0
+                 ) -> None:
         super(QAMultiChoiceMaxAttention, self).__init__(vocab)
 
         self._use_cuda = (torch.cuda.is_available() and torch.cuda.current_device() >= 0)
-
-        self._params = params
 
         self._text_field_embedder = text_field_embedder
         if embeddings_dropout_value > 0.0:
@@ -103,17 +102,32 @@ class QAMultiChoiceMaxAttention(Model):
             choice_output_dim = self._choice_encoder.get_output_dim()
 
         if question_output_dim != choice_output_dim:
-            raise ConfigurationError("Output dimension of the question_encoder (dim: {}), "
-                                     "plus choice_encoder (dim: {})"
+            raise ConfigurationError("Output dimension of the question_encoder (dim: {}) "
+                                     "and choice_encoder (dim: {})"
                                      "must match! "
                                      .format(question_output_dim,
                                              choice_output_dim))
 
-        # question to choice attention
-        att_question_to_choice_params = params.get("att_question_to_choice")
+        # Check input tensor dimensions for the question to choices attention (similarity function)
+        if hasattr(att_question_to_choice, "tensor_1_dim"):
+            tensor_1_dim = att_question_to_choice.tensor_1_dim
+            if tensor_1_dim != question_output_dim:
+                raise ConfigurationError("Output dimension of the question_encoder (dim: {}) "
+                                         "and tensor_1_dim (dim: {}) of att_question_to_choice"
+                                         "must match! "
+                                         .format(question_output_dim,
+                                                 tensor_1_dim))
 
-        self._matrix_attention_question_to_choice = MatrixAttention(
-            SimilarityFunction.from_params(att_question_to_choice_params))
+        if hasattr(att_question_to_choice, "tensor_2_dim"):
+            tensor_2_dim = att_question_to_choice.tensor_2_dim
+            if tensor_2_dim != question_output_dim:
+                raise ConfigurationError("Output dimension of the choice_encoder (dim: {}) "
+                                         "and tensor_2_dim (dim: {}) of att_question_to_choice"
+                                         "must match! "
+                                         .format(choice_output_dim,
+                                                 tensor_2_dim))
+
+        self._matrix_attention_question_to_choice = MatrixAttention(att_question_to_choice)
 
         self._accuracy = CategoricalAccuracy()
         self._loss = torch.nn.CrossEntropyLoss()
@@ -212,10 +226,15 @@ class QAMultiChoiceMaxAttention(Model):
             else:
                 choice_encoder = None
 
+        # question to choice attention
+        att_question_to_choice_params = params.get("att_question_to_choice")
+        att_question_to_choice = SimilarityFunction.from_params(att_question_to_choice_params)
+
         init_params = params.pop('initializer', None)
         initializer = (InitializerApplicator.from_params(init_params)
                        if init_params is not None
                        else InitializerApplicator())
+
 
         return cls(vocab=vocab,
                    text_field_embedder=text_field_embedder,
@@ -225,4 +244,4 @@ class QAMultiChoiceMaxAttention(Model):
                    aggregate_choice=choice_enc_aggregate,
                    aggregate_question=question_enc_aggregate,
                    embeddings_dropout_value=embeddings_dropout_value,
-                   params=params)
+                   att_question_to_choice=att_question_to_choice)
