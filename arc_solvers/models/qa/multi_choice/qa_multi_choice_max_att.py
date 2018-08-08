@@ -6,7 +6,7 @@ from allennlp.common import Params
 from allennlp.common.checks import ConfigurationError
 from allennlp.data import Vocabulary
 from allennlp.models.model import Model
-from allennlp.modules import FeedForward, Seq2SeqEncoder, MatrixAttention, SimilarityFunction
+from allennlp.modules import Seq2SeqEncoder, MatrixAttention, SimilarityFunction
 from allennlp.modules import TextFieldEmbedder
 from allennlp.nn import InitializerApplicator
 from allennlp.training.metrics import CategoricalAccuracy
@@ -28,7 +28,7 @@ class QAMultiChoiceMaxAttention(Model):
     question_aggregate = aggregate_method(question_encoded)
     choice_aggregate = aggregate_method(choice_encoded)
 
-    inter = concat([question_aggregate, choice_aggregate, abs(choice_aggregate - question_aggregate), question_aggregate
+    inter = concat([question_aggregate, choice_aggregate, choice_aggregate - question_aggregate, question_aggregate
      * choice_aggregate)
 
     The model is a popular baseline but it is most simialar to Conneau, A. et al. (2017) ‘Supervised Learning of
@@ -41,9 +41,8 @@ class QAMultiChoiceMaxAttention(Model):
     text_field_embedder : ``TextFieldEmbedder``
         Used to embed the ``question`` and ``choice`` ``TextFields`` we get as input to the
         model.
-    aggregate_feedforward : ``FeedForward``
-        These feedforward networks are applied to the concatenated result of the
-        encoder networks, and its output is used as the entailment class logits.
+    att_question_to_choice : ``SimilarityFunction``
+        The similarity (attention) function used to model the relation between the question and choices represenations.
     question_encoder : ``Seq2SeqEncoder``, optional (default=``None``)
         After embedding the question, we can optionally apply an encoder.  If this is ``None``, we
         will do nothing.
@@ -53,14 +52,13 @@ class QAMultiChoiceMaxAttention(Model):
         is also ``None``).
     initializer : ``InitializerApplicator``, optional (default=``InitializerApplicator()``)
         Used to initialize the model parameters.
-    regularizer : ``RegularizerApplicator``, optional (default=``None``)
-        If provided, will be used to calculate the regularization penalty during training.
-    share_encoders : ``bool``, optional (default=``false``)
-        Shares the weights of the question and choice encoders.
-    aggregate_question : ``str``, optional (default=``max``, allowed options [max, avg, sum, last])
+    aggregate_question : ``str``, optional (default=``max``, allowed options [max, avg, sum])
         The aggregation method for the encoded question.
-    aggregate_choice : ``str``, optional (default=``max``, allowed options [max, avg, sum, last])
+    aggregate_choice : ``str``, optional (default=``max``, allowed options [max, avg, sum])
         The aggregation method for the encoded choice.
+    embeddings_dropout_value : ``float``, optional (default=0.0)
+        The dropout rate used after the embeddings layer. If set, it is used only during training.
+
     """
 
     def __init__(self, vocab: Vocabulary,
@@ -157,10 +155,10 @@ class QAMultiChoiceMaxAttention(Model):
 
         label_logits : torch.FloatTensor
             A tensor of shape ``(batch_size, num_labels)`` representing unnormalised log
-            probabilities of the entailment label.
+            probabilities of each choice being the correct answer.
         label_probs : torch.FloatTensor
-            A tensor of shape ``(batch_size, num_labels)`` representing probabilities of the
-            entailment label.
+            A tensor of shape ``(batch_size, num_labels)`` representing
+            probabilities of each choice being the correct answer.
         loss : torch.FloatTensor, optional
             A scalar loss to be optimised.
         """
@@ -169,7 +167,7 @@ class QAMultiChoiceMaxAttention(Model):
                                                                                 self._text_field_embedder,
                                                                                 self._embeddings_dropout,
                                                                                 self._choice_encoder,
-                                                                                self._choice_aggregate)  # # bs, choices, hs
+                                                                                self._choice_aggregate)  # bs, choices, hs
 
         encoded_question_aggregated = embed_encode_and_aggregate_text_field(question, self._text_field_embedder,
                                                                                self._embeddings_dropout,
