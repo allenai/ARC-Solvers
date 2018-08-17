@@ -17,7 +17,7 @@ from arc_solvers.nn.util import embed_encode_and_aggregate_list_text_field, embe
 @Model.register("qa_multi_choice_max_att")
 class QAMultiChoiceMaxAttention(Model):
     """
-    This ``Model`` implements an attention interaction between question and choices context-encoded representations:
+    This ``QAMultiChoiceMaxAttention`` implements an attention interaction between question and choices context-encoded representations:
 
     1. Obtain a BiLSTM context representation of the token sequences of the
     `question` and each `choice`.
