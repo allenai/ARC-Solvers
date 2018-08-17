@@ -17,23 +17,27 @@ from arc_solvers.nn.util import embed_encode_and_aggregate_list_text_field, embe
 @Model.register("qa_multi_choice_max_att")
 class QAMultiChoiceMaxAttention(Model):
     """
-    This ``Model`` implements a simple context encoder baseline that models the interaction between question and choice:
+    This ``Model`` implements an attention interaction between question and choice context-encoded representations:
     The basic outline of this model is to get an embedded representation for the
     question and choice, model an interaction between them and use a linear projection to the class dimension + softmax
-    to get a final predictions:
+    to get a final predictions. Pseudo-code looks like:
 
-    question_encoded = context_enc(question_words)  # context encoder can be any AllenNLP supported or None
+    question_encoded = context_enc(question_words)  # context_enc can be any AllenNLP supported or None. Bi-directional LSTM is used
     choice_encoded = context_enc(choice_words)
 
-    question_aggregate = aggregate_method(question_encoded)
+    question_aggregate = aggregate_method(question_encoded) # aggregate_method can be max, min, avg. ``max`` is used.
     choice_aggregate = aggregate_method(choice_encoded)
 
     inter = concat([question_aggregate, choice_aggregate, choice_aggregate - question_aggregate, question_aggregate
      * choice_aggregate)
 
-    The model is a popular baseline but it is most simialar to Conneau, A. et al. (2017) ‘Supervised Learning of
-    Universal Sentence Representations from Natural Language Inference Data’,
-    without the feed-forward layer!
+    choice_to_question_att = linear_layer(inter) # the output is a scalar value for each question-to-choice interaction
+
+    # The choice_to_question_att of the four choices are normalized using ``softmax``
+    # and the choice with the highest attention is selected as the answer.
+
+    The model is inspired by the BiLSTM Max-Out model from Conneau, A. et al. (2017) ‘Supervised Learning of
+    Universal Sentence Representations from Natural Language Inference Data’.
 
     Parameters
     ----------
