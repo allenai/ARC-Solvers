@@ -4,7 +4,7 @@ This document contains description of the neural models for question answering.
 ## Multi Choice QA
 
 ### BiLSTM Max-out with Question to Choices Max Attention
-The [`QAMultiChoiceMaxAttention`](arc_solvers/models/qa/multi_choice/qa_multi_choice_max_att.py) model computes the attention interaction between question and choices context-encoded representations.
+The [`QAMultiChoiceMaxAttention`](multi_choice/qa_multi_choice_max_att.py) model computes the attention interaction between question and choices context-encoded representations.
 
 A high-level description of the model is:
 1. Obtain a BiLSTM context representation of the token sequences of the
