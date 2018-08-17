@@ -12,41 +12,41 @@ dataset), and use two types of models to predict the correct answer.
  ## Setup environment
  1. Create the `arc_solvers` environment using Anaconda
  
-   ```
-   conda create -n arc_solvers python=3.6
-   ```
+```bash
+conda create -n arc_solvers python=3.6
+```
  
  2. Activate the environment
  
-   ```
-   source activate arc_solvers
-   ```
+```bash
+source activate arc_solvers
+```
  
  3. Install the requirements in the environment: 
  
-   ```
-   sh scripts/install_requirements.sh
-   ```
+```bash
+sh scripts/install_requirements.sh
+```
  
  4. Install pytorch as per instructions on <http://pytorch.org/>. Command as of Feb. 26, 2018:
  
-   ```
-   conda install pytorch torchvision -c pytorch
-   ```
+```bash
+conda install pytorch torchvision -c pytorch
+```
   
 
  ## Setup data/models
  1. Download the data and models into `data/` folder. This will also build the ElasticSearch
  index (assumes ElasticSearch 6+ is running on `ES_HOST` machine defined in the script)
-  ```
-  sh scripts/download_data.sh
-  ```
+```bash
+sh scripts/download_data.sh
+```
 
  2. Download and prepare embeddings. This will download glove.840B.300d.zip from https://nlp.stanford.edu/projects/glove/ and 
  convert it to glove.840B.300d.txt.gz which is readable from AllenNLP
-   ```
-  sh download_and_prepare_glove.sh
-  ```
+```bash
+sh download_and_prepare_glove.sh
+```
 
  
 ## Running baseline models
@@ -54,16 +54,16 @@ Run the entailment-based baseline solvers against a question set using `scripts/
 
 ### Running a pre-trained DGEM model
 For example, to evaluate the DGEM model on the Challenge Set, run:
-```
+```bash
 sh scripts/evaluate_solver.sh \
 	data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
 	data/ARC-V1-Models-Aug2018/dgem/
 ```
-  Change `dgem` to `decompatt` to test the Decomposable Attention model.
+Change `dgem` to `decompatt` to test the Decomposable Attention model.
 
 ### Running a pre-trained BiDAF model
 To evaluate the BiDAF model, use the `evaluate_bidaf.sh` script
-```
+```bash
  sh scripts/evaluate_bidaf.sh \
     data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
     data/ARC-V1-Models-Aug2018/bidaf/
@@ -79,16 +79,18 @@ Pseudo code of the model:
 
 ```python
 # encode question and each choice
-question_encoded = context_enc(question_words)  # context_enc can be any AllenNLP supported or None. Bi-directional LSTM is used
-choice_encoded = context_enc(choice_words)  # `length X hidden_size`
+question_encoded = context_enc(question_words)  # context_enc can be any AllenNLP supported context encoder or None. Bi-directional LSTM is used
+choice_encoded = context_enc(choice_words)  # seq_length X hidden_size
 
 #get a single vector representations for question and choice
 question_aggregate = aggregate_method(question_encoded)  # aggregate_method can be max, min, avg. ``max`` is used.
-choice_aggregate = aggregate_method(choice_encoded)  # `length X hidden_size`
+choice_aggregate = aggregate_method(choice_encoded)  # seq_length X hidden_size
 
 # interaction representaiton
-q_to_ch_interaction_repr = concat([question_aggregate, choice_aggregate, choice_aggregate - question_aggregate, question_aggregate
- * choice_aggregate)  # `4 x hidden_size`
+q_to_ch_interaction_repr = concat([question_aggregate,
+                                   choice_aggregate,
+                                   choice_aggregate - question_aggregate,
+                                   question_aggregate * choice_aggregate)  # 4 x hidden_size
 
 # question to choice attention
 att_q_to_ch = linear_layer(q_to_ch_interaction_repr)  # the output is a scalar value (size 1) for each question-to-choice interaction
@@ -122,21 +124,22 @@ python arc_solvers/run.py train -s trained_models/qa_multi_question_to_choices/s
 
  To run the baseline solvers against a new question set, create a file using the JSONL format.
  For example:
- ```
- {
+```json
+{
     "id":"Mercury_SC_415702",
     "question": {
        "stem":"George wants to warm his hands quickly by rubbing them. Which skin surface will
                produce the most heat?",
        "choices":[
-				  {"text":"dry palms","label":"A"},
-				  {"text":"wet palms","label":"B"},
-				  {"text":"palms covered with oil","label":"C"},
-				  {"text":"palms covered with lotion","label":"D"}
+                  {"text":"dry palms","label":"A"},
+                  {"text":"wet palms","label":"B"},
+                  {"text":"palms covered with oil","label":"C"},
+                  {"text":"palms covered with lotion","label":"D"}
                  ]
     },
-    "answerKey":"A"}
- ```
+    "answerKey":"A"
+}
+```
   Run the evaluation scripts on this new file using the same commands as above.
 
 
@@ -153,11 +156,11 @@ python arc_solvers/run.py train -s trained_models/qa_multi_question_to_choices/s
 
    3. Run the `evaluate_solver.sh` script with your learned model in `my_awesome_model/model.tar.gz`:
 
-    ```bash
-     sh scripts/evaluate_solver.sh \
-        data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
-        my_awesome_model/
-    ```
+```bash
+ sh scripts/evaluate_solver.sh \
+    data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
+    my_awesome_model/
+```
 
 ## Running a new Reading Comprehension model
  To run a new reading comprehension (RC) model (implemented using AllenNLP), you need to
@@ -172,10 +175,10 @@ python arc_solvers/run.py train -s trained_models/qa_multi_question_to_choices/s
 
    3. Run the `evaluate_bidaf.sh` script with your learned model in `my_awesome_model/model.tar.gz`:
 
-    ```bash
-     sh scripts/evaluate_solver.sh \
-        data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
-        my_awesome_model/
-    ```
+```bash
+ sh scripts/evaluate_solver.sh \
+    data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
+    my_awesome_model/
+```
 
 
