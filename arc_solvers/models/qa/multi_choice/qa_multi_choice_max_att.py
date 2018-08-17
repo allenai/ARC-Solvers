@@ -17,10 +17,15 @@ from arc_solvers.nn.util import embed_encode_and_aggregate_list_text_field, embe
 @Model.register("qa_multi_choice_max_att")
 class QAMultiChoiceMaxAttention(Model):
     """
-    This ``Model`` implements an attention interaction between question and choice context-encoded representations:
-    The basic outline of this model is to get an embedded representation for the
-    question and choice, model an interaction between them and use a linear projection to the class dimension + softmax
-    to get a final predictions. Pseudo-code looks like:
+    This ``Model`` implements an attention interaction between question and choices context-encoded representations:
+
+    1. Obtain a BiLSTM context representation of the token sequences of the
+    `question` and each `choice`.
+    2. Get an aggregated (single vector) representations for `question` and `choice` using element-wise `max` operation.
+    3. Compute the attention score between `question` and `choice` as  `linear_layer([u, v, u - v, u * v])`, where `u` and `v` are the representations from Step 2.
+    4. Select as answer the `choice` with the highest attention with the `question`.
+
+    Pseudo-code looks like:
 
     question_encoded = context_enc(question_words)  # context_enc can be any AllenNLP supported or None. Bi-directional LSTM is used
     choice_encoded = context_enc(choice_words)
