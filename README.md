@@ -70,12 +70,15 @@ To evaluate the BiDAF model, use the `evaluate_bidaf.sh` script
 ```
 
 ### Training and evaluating the BiLSTM Max-out with Question to Choices Max Attention
-
 This model implements an attention interaction between question and choice context-encoded representations:
 
-The basic outline of this model is to get an embedded representation for the
-question and choice, model an interaction between them and use a linear layer to het an attention score.
-Pseudo code of the model:
+1. Obtain a BiLSTM context representation of the token sequences of the
+`question` and each `choice`.
+2. Get an aggregated (single vector) representations for `question` and `choice` using element-wise `max` operation.
+3. Compute the attention score between `question` and `choice` as  `linear_layer([u, v, u - v, u * v])`, where `u` and `v` are the representations from Step 2.
+4. Select as answer the `choice` with the highest attention with the `question`.
+
+Pseudo code of the model is presented below:
 
 ```python
 # encode question and each choice
