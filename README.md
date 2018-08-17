@@ -70,9 +70,10 @@ To evaluate the BiDAF model, use the `evaluate_bidaf.sh` script
 ```
 
 ### Training and evaluating the BiLSTM Max-out with Question to Choices Max Attention
-This model implements an attention interaction between question and choices context-encoded representations. The model is described [here](arc_solvers/models/qa/README.md#bilstm-max-out-with-question-to-choices-max-attention).
+This model implements an attention  interaction between the context-encoded
+representations of the question and the choices. The model is described [here](arc_solvers/models/qa/README.md#bilstm-max-out-with-question-to-choices-max-attention).
 
-To train the model, you need to have the data and embeddings downloaded (Step 2. of *Setup data/models* above).
+To train the model, download the data and word embeddings (see *Setup data/models* above).
 
 Evaluate the trained model:
 ```bash

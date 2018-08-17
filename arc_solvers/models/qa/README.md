@@ -1,14 +1,14 @@
 # Models for Question Answering
-This document contains description of the neural models for question answering.
+This document contains a description of the neural models for question answering.
 
 ## Multi Choice QA
 
 ### BiLSTM Max-out with Question to Choices Max Attention
 The [`QAMultiChoiceMaxAttention`](multi_choice/qa_multi_choice_max_att.py)
-model computes the attention interaction between question and choices
-context-encoded representations.
+model computes the attention interaction between the context-encoded
+representations of the question and the choices.
 
-A high-level description of the model is:
+At a high level, the model works as follows:
 1. Obtain a BiLSTM context representation of the token sequences of the
 `question` and each `choice`.
 2. Get an aggregated (single vector) representations for `question` and
@@ -41,14 +41,12 @@ answer_id = argmax(softmax([att_q_to_ch0, att_q_to_ch1, att_q_to_ch2, att_q_to_c
 
 ```
 
-The model is inspired by the BiLSTM Max-Out model from Conneau, A. et al. (2017)
-‘Supervised Learning of
-Universal Sentence Representations from Natural Language Inference Data’.
+The model is inspired by the BiLSTM Max-Out model from [Conneau, A. et al. (2017)](https://www.semanticscholar.org/paper/Supervised-Learning-of-Universal-Sentence-from-Data-Conneau-Kiela/80b076d5c01b8cb2611156e4bcb987f850efcb9c).
 
 #### Training and evaluation of the model
 
-To train the model, you need to have the data and embeddings downloaded
-(Step 2. of *Setup data/models* above).
+To train the model, download the data and word embeddings
+(see [Setup data/models](../../../README.md#setup-datamodels)).
 
 Evaluate the trained model:
 ```bash
