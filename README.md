@@ -47,29 +47,79 @@ dataset), and use two types of models to predict the correct answer.
    ```
   sh download_and_prepare_glove.sh
   ```
-  
-   
- 
- ## Running baseline models
- Run the entailment-based baseline solvers against a question set using `scripts/evaluate_solver.sh`
 
- For example, to evaluate the DGEM model on the Challenge Set, run:
+ 
+## Running baseline models
+Run the entailment-based baseline solvers against a question set using `scripts/evaluate_solver.sh`
+
+### Running a pre-trained DGEM model
+For example, to evaluate the DGEM model on the Challenge Set, run:
 ```
 sh scripts/evaluate_solver.sh \
 	data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
-	data/ARC-V1-Models-Feb2018/dgem/
+	data/ARC-V1-Models-Aug2018/dgem/
 ```
   Change `dgem` to `decompatt` to test the Decomposable Attention model.
 
- To evaluate the BiDAF model, use the `evaluate_bidaf.sh` script
+### Running a pre-trained BiDAF model
+To evaluate the BiDAF model, use the `evaluate_bidaf.sh` script
 ```
  sh scripts/evaluate_bidaf.sh \
     data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
-    data/ARC-V1-Models-Feb2018/bidaf/
+    data/ARC-V1-Models-Aug2018/bidaf/
 ```
 
- 
- ## Running against a new question set
+### Training and evaluating the BiLSTM Max-out with Question to Choices Max Attention
+
+This model implements an attention interaction between question and choice context-encoded representations:
+
+The basic outline of this model is to get an embedded representation for the
+question and choice, model an interaction between them and use a linear layer to het an attention score.
+Pseudo code of the model:
+
+```python
+# encode question and each choice
+question_encoded = context_enc(question_words)  # context_enc can be any AllenNLP supported or None. Bi-directional LSTM is used
+choice_encoded = context_enc(choice_words)  # `length X hidden_size`
+
+#get a single vector representations for question and choice
+question_aggregate = aggregate_method(question_encoded)  # aggregate_method can be max, min, avg. ``max`` is used.
+choice_aggregate = aggregate_method(choice_encoded)  # `length X hidden_size`
+
+# interaction representaiton
+q_to_ch_interaction_repr = concat([question_aggregate, choice_aggregate, choice_aggregate - question_aggregate, question_aggregate
+ * choice_aggregate)  # `4 x hidden_size`
+
+# question to choice attention
+att_q_to_ch = linear_layer(q_to_ch_interaction_repr)  # the output is a scalar value (size 1) for each question-to-choice interaction
+
+# The `choice_to_question_attention` of the four choices are normalized using ``softmax``
+# and the choice with the highest attention is selected as the answer.
+answer_id = argmax(softmax([att_q_to_ch0, att_q_to_ch1, att_q_to_ch2, att_q_to_ch3]))
+
+```
+
+The model is inspired by the BiLSTM Max-Out model from Conneau, A. et al. (2017) ‘Supervised Learning of
+Universal Sentence Representations from Natural Language Inference Data’.
+
+
+To train the model, you need to have the data and embeddings downloaded (Step 2. of *Setup data/models* above).
+
+Evaluate the trained model:
+```bash
+python arc_solvers/run.py evaluate --archive_file data/ARC-V1-Models-Aug2018/max_att/model.tar.gz --evaluation_data_file data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl
+```
+
+or
+
+Train a new model:
+```bash
+python arc_solvers/run.py train -s trained_models/qa_multi_question_to_choices/serialization/ arc_solvers/training_config/qa/multi_choice/reader_qa_multi_choice_max_att_ARC_Chellenge_full.json
+```
+
+
+## Running against a new question set
+
  To run the baseline solvers against a new question set, create a file using the JSONL format.
  For example:
  ```
@@ -86,29 +136,29 @@ sh scripts/evaluate_solver.sh \
                  ]
     },
     "answerKey":"A"}
- ``` 
+ ```
   Run the evaluation scripts on this new file using the same commands as above.
-  
-  
+
+
  ## Running a new Entailment-based model
-  To run a new entailment model (implemented using AllenNLP), you need to 
-   1. Create a `Predictor` that converts the input JSON to an `Instance` expected by your 
+  To run a new entailment model (implemented using AllenNLP), you need to
+   1. Create a `Predictor` that converts the input JSON to an `Instance` expected by your
    entailment model. See [DecompAttPredictor](arc_solvers/service/predictors/decompatt_qa_predictor.py)
    for an example.
-     
+
    2. Add your custom predictor to the [predictor overrides](arc_solvers/commands/__init__.py#L8)
-   For example, if your new model is registered using `my_awesome_model` and the predictor is 
-   registered using `my_awesome_predictor`, add `"my_awesome_model": "my_awesome_predictor"` to 
+   For example, if your new model is registered using `my_awesome_model` and the predictor is
+   registered using `my_awesome_predictor`, add `"my_awesome_model": "my_awesome_predictor"` to
    the `predictor_overrides`.
-   
+
    3. Run the `evaluate_solver.sh` script with your learned model in `my_awesome_model/model.tar.gz`:
 
-    ```
+    ```bash
      sh scripts/evaluate_solver.sh \
         data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
         my_awesome_model/
     ```
-     
+
 ## Running a new Reading Comprehension model
  To run a new reading comprehension (RC) model (implemented using AllenNLP), you need to
    1. Create a `Predictor` that converts the input JSON to an `Instance` expected by your
@@ -122,25 +172,10 @@ sh scripts/evaluate_solver.sh \
 
    3. Run the `evaluate_bidaf.sh` script with your learned model in `my_awesome_model/model.tar.gz`:
 
-    ```
+    ```bash
      sh scripts/evaluate_solver.sh \
         data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl \
         my_awesome_model/
-    ``` 
-    
-    
-## Training the BiLSTM max-out Question to Choices Max Attention
-To train the model, you need to have the data and embeddings downloaded.
+    ```
 
-Evaluate the trained model:
-```bash
-python arc_solvers/run.py evaluate --archive_file [URL_TO_model.tar.gz] --evaluation_data_file data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl 
 
-```
-
-or
-
-Train a new model:
-```bash
-python arc_solvers/run.py train -s trained_models/qa_multi_question_to_choices/serialization/ arc_solvers/training_config/qa/multi_choice/reader_qa_multi_choice_max_att_ARC_Chellenge_full.json
-```
