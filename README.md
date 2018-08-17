@@ -73,18 +73,23 @@ To evaluate the BiDAF model, use the `evaluate_bidaf.sh` script
 This model implements an attention  interaction between the context-encoded
 representations of the question and the choices. The model is described [here](arc_solvers/models/qa/README.md#bilstm-max-out-with-question-to-choices-max-attention).
 
-To train the model, download the data and word embeddings (see *Setup data/models* above).
+To train the model, download the data and word embeddings
+(see [Setup data/models](#setup-datamodels) above).
 
 Evaluate the trained model:
 ```bash
-python arc_solvers/run.py evaluate --archive_file data/ARC-V1-Models-Aug2018/max_att/model.tar.gz --evaluation_data_file data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl
+python arc_solvers/run.py evaluate \
+    --archive_file data/ARC-V1-Models-Aug2018/max_att/model.tar.gz \
+    --evaluation_data_file data/ARC-V1-Feb2018/ARC-Challenge/ARC-Challenge-Test.jsonl
 ```
 
 or
 
 Train a new model:
 ```bash
-python arc_solvers/run.py train -s trained_models/qa_multi_question_to_choices/serialization/ arc_solvers/training_config/qa/multi_choice/reader_qa_multi_choice_max_att_ARC_Chellenge_full.json
+python arc_solvers/run.py train \
+    -s trained_models/qa_multi_question_to_choices/serialization/ \
+    arc_solvers/training_config/qa/multi_choice/reader_qa_multi_choice_max_att_ARC_Chellenge_full.json
 ```
 
 
